@@ -56,6 +56,11 @@ def try_load(year, event, ident, telemetry=False, label=""):
     try:
         ses = fastf1.get_session(year, event, ident)
         ses.load(laps=True, telemetry=telemetry, weather=False, messages=False)
+        # FastF1 logs a warning and carries on when a download fails (for
+        # example a session that has not run yet). Touching .laps raises if
+        # nothing was loaded, so we skip the session instead of crashing later.
+        if len(ses.laps) == 0:
+            raise ValueError("no laps recorded")
         log(f"  loaded {label or ident} {year} {event}")
         return ses
     except Exception as exc:  # network, missing session, schema change
@@ -377,7 +382,14 @@ def build(args):
                 for team, gap in team_pace(r.laps).items():
                     form["race_pace"].setdefault(team, {})[str(rno)] = gap
             if q is not None:
-                for team, gap in team_quali(q.results).items():
+                gaps = {}
+                try:
+                    gaps = team_quali(q.results)
+                except Exception as exc:
+                    log(f"  quali results unusable for R{rno}: {type(exc).__name__}")
+                if not gaps:  # results table had no Q times; fall back to best laps
+                    gaps = team_best_lap(q.laps)
+                for team, gap in gaps.items():
                     form["quali"].setdefault(team, {})[str(rno)] = gap
             form["rounds"].append(entry)
     except Exception as exc:
@@ -390,13 +402,18 @@ def build(args):
         for ident, key in [("FP1", "fp1"), ("FP2", "fp2"), ("FP3", "fp3"),
                            ("SQ", "sprint_quali"), ("S", "sprint"), ("Q", "quali")]:
             ses = try_load(args.year, args.round, ident, label=key)
-            if ses is None or len(ses.laps) == 0:
+            if ses is None:
                 continue
-            entry = {"best_lap": team_best_lap(ses.laps)}
-            if ident.startswith("FP"):
-                entry["long_run"] = long_run_pace(ses.laps)
-            wk[key] = entry
+            try:
+                entry = {"best_lap": team_best_lap(ses.laps)}
+                if ident.startswith("FP"):
+                    entry["long_run"] = long_run_pace(ses.laps)
+                wk[key] = entry
+            except Exception as exc:
+                log(f"  could not summarise {key}: {type(exc).__name__}: {str(exc)[:90]}")
         out["weekend"] = wk
+        if not wk:
+            log("  no sessions from this weekend have data yet (normal before Friday practice)")
     return out
 
 
