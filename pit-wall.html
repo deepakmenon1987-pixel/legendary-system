@@ -1,0 +1,778 @@
+<title>Pit Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: timing-screen dashboard. Header with race countdown, four tabs (Preview, Insights, Live, Calendar), cards on a 12-col grid that stack at phone width. */
+:root{
+  --bg:#f3f2f5; --surface:#ffffff; --surface2:#ebe9ef; --fg:#17151d; --muted:#5f5b6a; --line:#d8d5df;
+  --accent:#9a6700; --accent-fill:#f2c230; --on-accent:#17151d; --purple:#7a2fd0; --good:#12805a; --warn:#b3680a; --bad:#c2273a;
+  --s1:#2a78d6; --s2:#eb6834; --grid:#e1e0d9;
+  --sp1:#86b6ef; --sp2:#5598e7; --sp3:#2a78d6; --sp4:#1c5cab; --sp5:#0d366b;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f0e14; --surface:#17151f; --surface2:#201d2b; --fg:#ece9f2; --muted:#9d98ac; --line:#2d2a3a;
+  --accent:#f2c230; --accent-fill:#f2c230; --on-accent:#17151d; --purple:#b87bff; --good:#3ecf8e; --warn:#f2a33a; --bad:#ff6677;
+  --s1:#3987e5; --s2:#d95926; --grid:#2c2c2a;
+  --sp1:#184f95; --sp2:#256abf; --sp3:#3987e5; --sp4:#6da7ec; --sp5:#9ec5f4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f0e14; --surface:#17151f; --surface2:#201d2b; --fg:#ece9f2; --muted:#9d98ac; --line:#2d2a3a;
+  --accent:#f2c230; --accent-fill:#f2c230; --on-accent:#17151d; --purple:#b87bff; --good:#3ecf8e; --warn:#f2a33a; --bad:#ff6677;
+  --s1:#3987e5; --s2:#d95926; --grid:#2c2c2a;
+  --sp1:#184f95; --sp2:#256abf; --sp3:#3987e5; --sp4:#6da7ec; --sp5:#9ec5f4; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,6vw,58px);line-height:.95;margin:6px 0 0;text-transform:uppercase;text-wrap:balance}
+.sub{color:var(--muted);margin-top:8px}
+.count{display:flex;gap:6px;font-family:var(--mono);align-items:stretch}
+.count div{background:var(--surface);border:1px solid var(--line);padding:8px 12px;text-align:center;min-width:64px}
+.count b{display:block;font-size:26px;font-weight:500;font-variant-numeric:tabular-nums}
+.count span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.count-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+nav.tabs{display:flex;gap:4px;margin-block:16px;flex-wrap:wrap}
+nav.tabs button{font:600 15px var(--display);letter-spacing:.12em;text-transform:uppercase;background:transparent;color:var(--muted);border:1px solid var(--line);padding:9px 18px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent-fill);color:var(--on-accent);border-color:var(--accent-fill)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);padding:18px;min-width:0}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c5{grid-column:span 5}.c4{grid-column:span 4}.c6{grid-column:span 6}
+@media (max-width:820px){.c8,.c7,.c5,.c4,.c6{grid-column:span 12}}
+h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px}
+h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:16px}
+.facts div{background:var(--surface);padding:10px 12px}
+.facts b{display:block;font-family:var(--mono);font-weight:500;font-size:17px}
+.facts span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.meter{display:grid;grid-template-columns:minmax(120px,170px) 1fr auto;gap:12px;align-items:center;padding-block:8px;border-top:1px solid var(--line)}
+.meter:first-of-type{border-top:0}
+.segs{display:flex;gap:3px}.segs i{height:10px;flex:1;background:var(--surface2)}.segs i.on{background:var(--accent-fill)}
+.meter small{font-family:var(--mono);color:var(--muted);font-size:12px;white-space:nowrap}
+.meter .nm{font-weight:600}
+.map svg{width:100%;height:auto;display:block;max-height:420px}
+.map .road{fill:none;stroke:var(--fg);stroke-width:7;stroke-linejoin:round;stroke-linecap:round;opacity:.8}
+.map .edge{fill:none;stroke:var(--surface);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.map .note{fill:var(--muted);font:13px var(--body)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;font-family:var(--mono)}
+.sw{display:inline-block;width:4px;height:16px;vertical-align:-3px;margin-right:8px}
+.bar{height:8px;background:var(--surface2);min-width:90px}.bar i{display:block;height:100%}
+.fav{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--surface2);padding:12px 14px;margin-bottom:14px}
+.fav b{font-family:var(--display);font-size:28px;text-transform:uppercase;line-height:1}
+.pill{display:inline-block;font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);color:var(--muted)}
+.pill.p{color:var(--purple);border-color:var(--purple)}
+input[type=range]{width:100%;min-width:90px;accent-color:var(--purple)}
+select,.btn{font:600 14px var(--body);background:var(--surface2);color:var(--fg);border:1px solid var(--line);padding:8px 14px}
+.btn{cursor:pointer}
+.btn.primary{background:var(--accent-fill);color:var(--on-accent);border-color:var(--accent-fill)}
+input.txt{font:14px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);padding:8px 10px;min-width:0;width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.status.err{color:var(--bad)}
+.tyre{display:inline-block;font:600 11px var(--mono);padding:2px 6px;border:2px solid var(--muted);border-radius:50%;min-width:24px;text-align:center}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{padding:8px 0;border-top:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+ul.plain li:first-child{border-top:0}
+.mono{font-family:var(--mono);font-size:13px}
+.muted{color:var(--muted)}
+.foot{margin-top:28px;color:var(--muted);font-size:12px}
+.foot a{color:var(--fg)}
+.theme{font-size:12px}
+/* insights */
+.insights{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.insights li{padding:10px 12px;background:var(--surface2);border-left:3px solid var(--accent-fill)}
+.insights b{font-weight:600}
+.code{display:block;background:var(--bg);border:1px solid var(--line);padding:10px 12px;font:13px var(--mono);overflow-x:auto;white-space:pre;margin:8px 0}
+.legend{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend .ramp{display:flex}.legend .ramp i{width:28px;height:10px;display:block}
+.legend .ramp i+i{margin-left:2px}
+.readout{font-family:var(--mono);font-size:13px;min-height:20px;margin-top:8px;color:var(--fg)}
+canvas.trace{width:100%;height:260px;display:block;touch-action:pan-y}
+.hbar{display:grid;grid-template-columns:minmax(96px,160px) 1fr minmax(60px,auto);gap:10px;align-items:center;padding-block:5px}
+.hbar .track{height:18px;background:transparent;position:relative}
+.hbar .fill{height:18px;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
+.hbar .fill.hi{background:var(--s2)}
+.hbar .v{font-family:var(--mono);font-size:13px;text-align:right}
+.hbar .nm{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cols>div{min-width:0}
+@media (prefers-reduced-motion:no-preference){.hbar .fill,.bar i{transition:width .25s ease}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">Pit Wall &middot; 2026 season &middot; Round 17</div>
+      <h1>Singapore Grand Prix</h1>
+      <div class="sub">Marina Bay Street Circuit &middot; Sprint weekend &middot; night race</div>
+    </div>
+    <div>
+      <div class="count-label" id="countLabel">Lights out in</div>
+      <div class="count" id="count"><div><b>--</b><span>days</span></div><div><b>--</b><span>hrs</span></div><div><b>--</b><span>min</span></div><div><b>--</b><span>sec</span></div></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+    <button role="tab" id="t-preview" aria-selected="true" data-tab="preview">Preview</button>
+    <button role="tab" id="t-insights" aria-selected="false" data-tab="insights">Insights</button>
+    <button role="tab" id="t-live" aria-selected="false" data-tab="live">Replay</button>
+    <button role="tab" id="t-calendar" aria-selected="false" data-tab="calendar">Calendar</button>
+  </nav>
+
+  <!-- PREVIEW -->
+  <section id="preview" class="grid" aria-labelledby="t-preview">
+    <div class="card c7 map">
+      <h2>Track</h2>
+      <p class="hint" id="mapHint">Real Marina Bay outline. Load your data file on the Insights tab to colour it by speed and add corner numbers.</p>
+      <svg id="mapSvg" viewBox="0 0 600 440" role="img" aria-label="Marina Bay Street Circuit outline"></svg>
+    </div>
+
+    <div class="card c5">
+      <h2>Track character</h2>
+      <p class="hint">Facts first, then my read of how the circuit behaves.</p>
+      <div class="facts">
+        <div><b>4.927 km</b><span>lap</span></div>
+        <div><b>62</b><span>laps (2 h cap)</span></div>
+        <div><b>~325 km/h</b><span>top speed</span></div>
+        <div><b>Street</b><span>circuit type</span></div>
+      </div>
+      <div id="meters"></div>
+      <p class="hint" style="margin:12px 0 0">Meters are an editorial reading from past races, scaled 1 to 5. The Insights tab replaces opinion with numbers once your data is loaded.</p>
+    </div>
+
+    <div class="card c7">
+      <h2>Favourite for this race</h2>
+      <p class="hint">Pick what the ranking is based on. Drag a slider if you think a team gets a boost or a penalty at Marina Bay.</p>
+      <div class="row" style="margin-bottom:12px"><label for="basis" class="muted" style="font-size:13px">Based on</label><select id="basis"></select></div>
+      <div class="fav" id="fav"></div>
+      <div class="scroll"><table id="favTable" aria-label="Team ranking and adjustment"></table></div>
+      <p class="hint" style="margin:12px 0 0" id="favNote"></p>
+    </div>
+
+    <div class="card c5">
+      <h2>Weekend schedule</h2>
+      <p class="hint">Shown in your local time, with Singapore time beside it.</p>
+      <ul class="plain" id="sched"></ul>
+      <p class="hint" style="margin:12px 0 0">Forecast from F1.com: chance of rain Friday and Saturday, dry for the race.</p>
+    </div>
+
+    <div class="card c12">
+      <h2>Marina Bay, what to expect</h2>
+      <div class="grid" style="gap:12px">
+        <div class="c6"><ul class="plain">
+          <li><span>Downforce level</span><b>High. Slow corners and bumps reward mechanical grip and traction.</b></li>
+          <li><span>Overtaking</span><b>Hard. Turn 7 is the main place; strategy and safety cars often decide it.</b></li>
+          <li><span>Conditions</span><b>Hot and humid at night, tough on drivers and on cooling.</b></li>
+        </ul></div>
+        <div class="c6"><ul class="plain" id="winners"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section id="insights" class="grid" hidden aria-labelledby="t-insights">
+    <div class="card c12" id="loader">
+      <h2>Your race data</h2>
+      <p class="hint" id="loadHint">Insights are computed from real timing data by a small FastF1 script that you run once on your own computer, then load here. Nothing is made up: until a file is loaded, this tab stays empty.</p>
+      <details id="howto">
+        <summary class="muted" style="cursor:pointer">How to build the file (about 5 commands)</summary>
+        <span class="code" id="cmdBox">pip install fastf1 numpy pandas
+python build_data.py --year 2026 --round 17 --venue Singapore
+# first run downloads a lot of data (10 to 20 minutes), later runs are quick
+# re-run on Friday, Saturday and Sunday to pick up the new sessions</span>
+        <button class="btn" id="copyCmd" type="button">Copy commands</button>
+      </details>
+      <div class="row" style="margin-top:12px">
+        <label class="btn primary" for="dataFile" style="cursor:pointer">Load pitwall_data.json</label>
+        <input id="dataFile" type="file" accept=".json,application/json" style="position:absolute;opacity:0;width:1px;height:1px">
+        <button class="btn" id="clearData" type="button" hidden>Clear loaded data</button>
+        <span class="status" id="dataStatus">No data loaded.</span>
+      </div>
+    </div>
+    <div id="insBody" class="c12" style="grid-column:span 12;display:grid;gap:16px" hidden>
+      <div class="card"><h2>What the data says</h2><ul class="insights" id="insList"></ul></div>
+
+      <div class="grid">
+        <div class="card c7 map" id="speedCard">
+          <h2>Speed map</h2>
+          <p class="hint" id="speedHint"></p>
+          <svg id="speedSvg" viewBox="0 0 600 440" role="img" aria-label="Circuit coloured by speed on the reference lap, with corner numbers"></svg>
+          <div class="legend" id="speedLegend"></div>
+          <div class="readout" id="speedReadout">Move over the track for speed, throttle and braking.</div>
+        </div>
+        <div class="card c5" id="cornerCard">
+          <h2>Slowest corners</h2>
+          <p class="hint">Minimum speed on the reference lap. These are the traction and braking tests.</p>
+          <div id="cornerBars"></div>
+        </div>
+      </div>
+
+      <div class="card" id="traceCard">
+        <h2>Speed trace</h2>
+        <p class="hint" id="traceHint"></p>
+        <canvas class="trace" id="trace" aria-label="Speed against lap distance, braking zones shaded"></canvas>
+        <div class="readout" id="traceReadout">Move across the chart to read speed at any point of the lap.</div>
+      </div>
+
+      <div class="card" id="histCard">
+        <h2>Recent races on this layout</h2>
+        <p class="hint" id="histHint"></p>
+        <div class="scroll"><table id="histTable"></table></div>
+        <div class="cols">
+          <div><h3>Laps under safety car</h3><div id="scBars"></div></div>
+          <div><h3>Tyre wear (seconds lost per lap of age)</h3><div id="tyreBars"></div><p class="hint" id="tyreNote" style="margin-top:8px"></p></div>
+        </div>
+      </div>
+
+      <div class="card" id="paceCard">
+        <h2>Who is quick right now</h2>
+        <p class="hint" id="paceHint"></p>
+        <div class="cols">
+          <div><h3>Race pace gap, recent rounds</h3><div id="paceBars"></div></div>
+          <div><h3>Qualifying gap to the fastest team</h3><div id="qualiBars"></div></div>
+        </div>
+        <div id="wkWrap" hidden><h3 id="wkTitle">This weekend</h3><div class="scroll"><table id="wkTable"></table></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPLAY -->
+  <section id="live" class="grid" hidden aria-labelledby="t-live">
+    <div class="card c12">
+      <h2>Session replay</h2>
+      <p class="hint">Loads the latest finished session from the OpenF1 API, free of charge: positions, gaps, tyres, race control and weather. OpenF1 releases a session's data about 30 minutes after it ends. For the live race, use F1TV's own timing.</p>
+      <div id="liveBlocked" class="status err" hidden></div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn primary" id="liveStart">Load latest session</button>
+        <button class="btn" id="liveStop" disabled>Stop</button>
+      </div>
+      <div class="status" id="liveStatus">Not started.</div>
+    </div>
+    <div class="card c7"><h2>Running order</h2>
+      <div class="scroll"><table><thead><tr><th class="n">Pos</th><th>Driver</th><th class="n">Gap</th><th class="n">Interval</th><th>Tyre</th></tr></thead><tbody id="board"></tbody></table></div>
+    </div>
+    <div class="card c5">
+      <h2>Race control</h2><ul class="plain" id="rc"><li class="muted">Nothing yet.</li></ul>
+      <h2 style="margin-top:18px">Weather</h2><div class="mono" id="wx">Nothing yet.</div>
+    </div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="calendar" class="grid" hidden aria-labelledby="t-calendar">
+    <div class="card c12">
+      <h2>Rest of the season</h2>
+      <p class="hint">Track character for each remaining round. Dates for the first four rounds come from RacingNews365; Qatar and Abu Dhabi are from my own knowledge of the calendar, so confirm them. Downforce and overtaking are my reading of each circuit, scaled 1 to 5.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Round</th><th>Date</th><th>Circuit type</th><th>Downforce</th><th>Overtaking</th><th>What shapes the race</th></tr></thead>
+        <tbody id="cal"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <p class="foot">Unofficial fan dashboard. Not affiliated with Formula 1 or the FIA. Outline from the public <a href="https://github.com/bacinger/f1-circuits" rel="noopener">bacinger/f1-circuits</a> dataset; timing data via <a href="https://docs.fastf1.dev" rel="noopener">FastF1</a> and <a href="https://openf1.org" rel="noopener">OpenF1</a>. Theme: <button class="btn theme" id="themeBtn" type="button">Switch light / dark</button></p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- static data ---------- */
+  var OUTLINE = [[103.86414,1.29173],[103.8644,1.28977],[103.86442,1.28952],[103.8644,1.2894],[103.86433,1.28929],[103.86401,1.2888],[103.86396,1.28872],[103.8639,1.28869],[103.86382,1.28869],[103.86365,1.28869],[103.86284,1.28874],[103.86161,1.28887],[103.86145,1.28891],[103.86135,1.28897],[103.86127,1.28906],[103.86121,1.28923],[103.8612,1.28939],[103.8612,1.28949],[103.86117,1.28955],[103.861,1.28956],[103.86082,1.28956],[103.85991,1.28961],[103.85734,1.28975],[103.85702,1.28979],[103.85681,1.28985],[103.85658,1.28996],[103.85567,1.29076],[103.85528,1.29109],[103.85522,1.29114],[103.85512,1.29116],[103.85501,1.29114],[103.85492,1.29108],[103.85486,1.29102],[103.8547,1.29052],[103.85461,1.29015],[103.85439,1.28901],[103.85394,1.28672],[103.85392,1.28667],[103.85389,1.28663],[103.85382,1.28658],[103.85375,1.28657],[103.85366,1.28657],[103.85362,1.28659],[103.85351,1.28672],[103.85341,1.28687],[103.85333,1.28704],[103.85324,1.28712],[103.85285,1.28744],[103.85265,1.28762],[103.85253,1.28774],[103.85245,1.28784],[103.85237,1.28811],[103.85239,1.28823],[103.85241,1.28832],[103.85246,1.28843],[103.85243,1.2885],[103.85233,1.28853],[103.85215,1.28859],[103.85199,1.28869],[103.8518,1.28883],[103.85165,1.28896],[103.85159,1.28907],[103.85157,1.28923],[103.85156,1.28937],[103.85171,1.28963],[103.85233,1.29072],[103.85312,1.29214],[103.85326,1.29239],[103.85339,1.29252],[103.85344,1.29256],[103.85362,1.2926],[103.85378,1.2925],[103.85398,1.29236],[103.85481,1.29149],[103.85488,1.29145],[103.85494,1.29147],[103.855,1.29158],[103.85533,1.29221],[103.85576,1.29295],[103.85584,1.29307],[103.85592,1.2931],[103.85606,1.29304],[103.85614,1.29299],[103.85846,1.29165],[103.85884,1.2915],[103.8591,1.29145],[103.86237,1.29126],[103.8625,1.29129],[103.86267,1.29136],[103.8628,1.29146],[103.86289,1.29162],[103.86291,1.29177],[103.86289,1.29213],[103.86279,1.29262],[103.86251,1.2934],[103.86243,1.29357],[103.86238,1.29371],[103.86235,1.29388],[103.86235,1.2941],[103.8624,1.29458],[103.86248,1.29478],[103.86259,1.29489],[103.86269,1.2949],[103.86278,1.29488],[103.86287,1.29476],[103.86293,1.2947],[103.86298,1.29463],[103.86307,1.29455],[103.86327,1.29445],[103.86345,1.2944],[103.86366,1.29442],[103.86378,1.29438],[103.86383,1.2943],[103.86387,1.29417],[103.86396,1.29309],[103.86414,1.29173]]; // [lon, lat] points, Marina Bay Street Circuit
+  var RACE_UTC = Date.UTC(2026,9,11,12,0,0); // 20:00 Singapore time
+  var SESSIONS = [
+    {n:"Practice 1", t:Date.UTC(2026,9,9,8,30,0)},
+    {n:"Sprint qualifying", t:Date.UTC(2026,9,9,12,30,0)},
+    {n:"Sprint (21 laps)", t:Date.UTC(2026,9,10,9,0,0)},
+    {n:"Qualifying", t:Date.UTC(2026,9,10,13,0,0)},
+    {n:"Grand Prix (62 laps)", t:RACE_UTC}
+  ];
+  var METERS = [
+    {n:"Downforce level", v:5, s:"high"},
+    {n:"Overtaking difficulty", v:5, s:"very hard"},
+    {n:"Brake and heat stress", v:5, s:"severe"},
+    {n:"Safety car likelihood", v:4, s:"likely"},
+    {n:"Top-speed demand", v:2, s:"low"}
+  ];
+  var TEAMS = [
+    {n:"Mercedes", p:503},{n:"Ferrari", p:358},{n:"McLaren", p:306},{n:"Red Bull", p:230},
+    {n:"Racing Bulls", p:77},{n:"Alpine", p:68},{n:"Haas", p:21},{n:"Audi", p:17},
+    {n:"Williams", p:11},{n:"Aston Martin", p:3},{n:"Cadillac", p:0}
+  ];
+  var TEAM_COLORS = {"Mercedes":"#27c4b0","Ferrari":"#e8002d","McLaren":"#ff8000","Red Bull":"#3671c6","Racing Bulls":"#6692ff","Alpine":"#ff87bc","Haas":"#9aa0a6","Audi":"#d6264a","Williams":"#4bb3f0","Aston Martin":"#229971","Cadillac":"#8d8d95"};
+  var WINNERS = [["2025","George Russell, Mercedes"],["2024","Lando Norris, McLaren"],["2023","Carlos Sainz, Ferrari"],["2022","Sergio Perez, Red Bull"]];
+  var CAL = [
+    {r:"United States (Austin)", d:"25 Oct", ty:"Permanent", df:3, ov:3, w:"Mixed corners and bumps. Long back straight helps passing into Turn 12."},
+    {r:"Mexico City", d:"1 Nov", ty:"Permanent, high altitude", df:5, ov:3, w:"Thin air cuts downforce and cooling. Cars run maximum wing and still feel light."},
+    {r:"Brazil (Sao Paulo)", d:"8 Nov", ty:"Permanent", df:3, ov:4, w:"Short lap, changeable weather, strong chances to pass on the straights."},
+    {r:"Las Vegas", d:"22 Nov", ty:"Street, low drag", df:1, ov:4, w:"Long straights and cold nights. Slipstreaming and tyre warm-up decide a lot."},
+    {r:"Qatar (Lusail)", d:"29 Nov", ty:"Permanent", df:4, ov:2, w:"Fast flowing corners that load the tyres hard. Passing is limited."},
+    {r:"Abu Dhabi (Yas Marina)", d:"6 Dec", ty:"Permanent", df:3, ov:3, w:"Twilight race with falling track temperature. Mid-level downforce."}
+  ];
+  var SESSION_NAMES = {quali:"Qualifying", sprint_quali:"Sprint qualifying", sprint:"Sprint", fp3:"Practice 3", fp2:"Practice 2", fp1:"Practice 1"};
+
+  var DATA = null;
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function svgEl(tag, attrs){ var e=document.createElementNS("http://www.w3.org/2000/svg",tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function segs(n){ var w=el("div","segs"); for(var i=1;i<=5;i++){ w.appendChild(el("i", i<=n?"on":"")); } return w; }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function num(x){ return typeof x==="number" && isFinite(x); }
+  function mean(a){ a=a.filter(num); return a.length? a.reduce(function(s,v){return s+v;},0)/a.length : null; }
+  function fixed(x,d){ return num(x)? x.toFixed(d) : "-"; }
+  function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
+  function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function shortTeam(n){
+    var s=String(n||"").toLowerCase();
+    if(s.indexOf("racing bulls")>-1||s==="rb"||s.indexOf("visa")>-1) return "Racing Bulls";
+    if(s.indexOf("red bull")>-1) return "Red Bull";
+    var keys=["mercedes","ferrari","mclaren","alpine","haas","audi","williams","aston","cadillac","sauber"];
+    var names={"mercedes":"Mercedes","ferrari":"Ferrari","mclaren":"McLaren","alpine":"Alpine","haas":"Haas","audi":"Audi","williams":"Williams","aston":"Aston Martin","cadillac":"Cadillac","sauber":"Audi"};
+    for(var i=0;i<keys.length;i++) if(s.indexOf(keys[i])>-1) return names[keys[i]];
+    return String(n||"Unknown");
+  }
+  function fitPoints(pts, w, h, padPx){
+    var xs=pts.map(function(p){return p[0];}), ys=pts.map(function(p){return p[1];});
+    var minx=Math.min.apply(null,xs), maxx=Math.max.apply(null,xs), miny=Math.min.apply(null,ys), maxy=Math.max.apply(null,ys);
+    var s=Math.min((w-2*padPx)/(maxx-minx||1),(h-2*padPx)/(maxy-miny||1));
+    var ox=(w-(maxx-minx)*s)/2, oy=(h-(maxy-miny)*s)/2;
+    return function(x,y){ return [ox+(x-minx)*s, oy+(y-miny)*s]; };
+  }
+
+  /* ---------- countdown ---------- */
+  var cEl=document.getElementById("count"), cLabel=document.getElementById("countLabel");
+  function tick(){
+    var ms=RACE_UTC-Date.now(), vals;
+    if(ms<=0){ cLabel.textContent="Lights out"; vals=[0,0,0,0]; }
+    else { var s=Math.floor(ms/1000); vals=[Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60]; }
+    var bs=cEl.querySelectorAll("b"); for(var i=0;i<4;i++) bs[i].textContent=pad(vals[i]);
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---------- schedule, meters, winners, calendar ---------- */
+  var sched=document.getElementById("sched");
+  var fmtLocal=new Intl.DateTimeFormat(undefined,{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  var fmtSgt=new Intl.DateTimeFormat("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Singapore"});
+  SESSIONS.forEach(function(s){
+    var li=el("li"); li.appendChild(el("b","",s.n));
+    li.appendChild(el("span","mono",fmtLocal.format(s.t)+"  (SGT "+fmtSgt.format(s.t)+")")); sched.appendChild(li);
+  });
+  var mEl=document.getElementById("meters");
+  METERS.forEach(function(m){ var r=el("div","meter"); r.appendChild(el("span","nm",m.n)); r.appendChild(segs(m.v)); r.appendChild(el("small","",m.s)); mEl.appendChild(r); });
+  var wEl=document.getElementById("winners");
+  var hd=el("li"); hd.appendChild(el("b","","Recent winners")); wEl.appendChild(hd);
+  WINNERS.forEach(function(w){ var li=el("li"); li.appendChild(el("span","mono",w[0])); li.appendChild(el("span","",w[1])); wEl.appendChild(li); });
+  var calEl=document.getElementById("cal");
+  CAL.forEach(function(c){
+    var tr=el("tr"); tr.appendChild(el("td","",c.r)); tr.appendChild(el("td","mono",c.d)); tr.appendChild(el("td","",c.ty));
+    var a=el("td"); a.appendChild(segs(c.df)); var b=el("td"); b.appendChild(segs(c.ov));
+    tr.appendChild(a); tr.appendChild(b); tr.appendChild(el("td","muted",c.w)); calEl.appendChild(tr);
+  });
+
+  /* ---------- preview map (real outline) ---------- */
+  function drawOutlineMap(){
+    var svg=document.getElementById("mapSvg"); clear(svg);
+    var lat0=OUTLINE.reduce(function(s,p){return s+p[1];},0)/OUTLINE.length, k=Math.cos(lat0*Math.PI/180);
+    var pts=OUTLINE.map(function(p){ return [p[0]*k, -p[1]]; });
+    var f=fitPoints(pts,600,440,30);
+    var d=pts.map(function(p,i){ var q=f(p[0],p[1]); return (i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1); }).join(" ")+" Z";
+    svg.appendChild(svgEl("path",{"class":"road",d:d}));
+    var t=svgEl("text",{"class":"note",x:"16",y:"430"}); t.textContent="Outline: public GeoJSON dataset (bacinger/f1-circuits), north up."; svg.appendChild(t);
+  }
+  drawOutlineMap();
+
+  /* ---------- favourites ---------- */
+  var adj={};
+  var basisEl=document.getElementById("basis"), favEl=document.getElementById("fav"), favTable=document.getElementById("favTable"), favNote=document.getElementById("favNote");
+  function basisOptions(){
+    var o=[{id:"points",label:"Season points"}];
+    if(DATA && DATA.form && DATA.form.race_pace && Object.keys(DATA.form.race_pace).length) o.push({id:"pace",label:"Recent race pace"});
+    if(DATA && DATA.weekend){ ["quali","sprint_quali","fp2","fp1","fp3","sprint"].forEach(function(k){ if(DATA.weekend[k]) o.push({id:"wk:"+k,label:"This weekend: "+SESSION_NAMES[k]}); }); }
+    return o;
+  }
+  function refreshBasis(){
+    var prev=basisEl.value; clear(basisEl);
+    basisOptions().forEach(function(o){ var op=el("option","",o.label); op.value=o.id; basisEl.appendChild(op); });
+    var ids=Array.prototype.map.call(basisEl.options,function(o){return o.value;});
+    basisEl.value = ids.indexOf(prev)>-1 ? prev : (ids.indexOf("wk:quali")>-1 ? "wk:quali" : (ids.indexOf("pace")>-1 ? "pace" : "points"));
+  }
+  function rowsFor(basis){
+    var rows=[];
+    if(basis==="points"){
+      TEAMS.forEach(function(t){ rows.push({name:t.n, raw:t.p, kind:"pct", show:String(t.p)+" pts"}); });
+      return rows;
+    }
+    var src={};
+    if(basis==="pace"){
+      Object.keys(DATA.form.race_pace).forEach(function(t){ var m=mean(Object.keys(DATA.form.race_pace[t]).map(function(r){return DATA.form.race_pace[t][r];})); if(m!=null) src[shortTeam(t)]=m; });
+    } else {
+      var key=basis.slice(3), s=DATA.weekend[key]||{}, m=(key.indexOf("fp")===0 && s.long_run && Object.keys(s.long_run).length) ? s.long_run : s.best_lap||{};
+      Object.keys(m).forEach(function(t){ if(num(m[t])) src[shortTeam(t)]=m[t]; });
+    }
+    Object.keys(src).forEach(function(n){ rows.push({name:n, raw:src[n], kind:"gap", show:"+"+fixed(src[n],2)+"%"}); });
+    return rows;
+  }
+  function renderFav(){
+    var basis=basisEl.value||"points";
+    var rows=rowsFor(basis);
+    rows.forEach(function(r){
+      var a=adj[basis+"|"+r.name]||0;
+      r.score = r.kind==="pct" ? r.raw*(1+a/100) : -(r.raw+a);
+    });
+    rows.sort(function(a,b){return b.score-a.score;});
+    favEl.textContent=""; clear(favTable);
+    if(!rows.length){ favEl.appendChild(el("span","muted","No team data for this basis yet.")); return; }
+    favEl.appendChild(el("span","pill p","Favourite"));
+    favEl.appendChild(el("b","",rows[0].name));
+    if(rows[1]){
+      var txt;
+      if(rows[0].kind==="pct"){ var g=Math.round((1-rows[1].score/rows[0].score)*100); txt = g>0 ? "ahead of "+rows[1].name+" by "+g+"% on this scoring" : "level with "+rows[1].name; }
+      else { var d=(rows[0].score-rows[1].score); txt = "faster than "+rows[1].name+" by "+fixed(d,2)+" percentage points of lap time"; }
+      favEl.appendChild(el("span","muted",txt));
+    }
+    var hr=el("tr"), thead=el("thead");
+    ["#","Team","Value","","Your adjustment"].forEach(function(h,i){ hr.appendChild(el("th", i===0||i===2?"n":"", h)); });
+    thead.appendChild(hr); favTable.appendChild(thead);
+    var scores=rows.map(function(r){return r.score;}), top=Math.max.apply(null,scores), low=Math.min.apply(null,scores);
+    var tb=el("tbody");
+    rows.forEach(function(r,i){
+      var tr=el("tr"); tr.appendChild(el("td","n",String(i+1)));
+      var td=el("td"); var sw=el("span","sw"); sw.style.background=TEAM_COLORS[r.name]||"var(--muted)"; td.appendChild(sw); td.appendChild(document.createTextNode(r.name)); tr.appendChild(td);
+      tr.appendChild(el("td","n",r.show));
+      var frac = r.kind==="pct" ? (top? Math.max(0.02,r.score/top) : 0.02) : (top===low ? 1 : Math.max(0.04,(r.score-low)/(top-low)));
+      var bt=el("td"); var bar=el("div","bar"); var fill=el("i"); fill.style.width=(frac*100)+"%"; fill.style.background=TEAM_COLORS[r.name]||"var(--s1)"; bar.appendChild(fill); bt.appendChild(bar); tr.appendChild(bt);
+      var at=el("td"); var rg=document.createElement("input"); rg.type="range"; rg.id="adj-"+i;
+      var key=basis+"|"+r.name;
+      if(r.kind==="pct"){ rg.min="-30"; rg.max="30"; rg.step="5"; } else { rg.min="-1"; rg.max="1"; rg.step="0.25"; }
+      rg.value=String(adj[key]||0); rg.setAttribute("aria-label","Adjust "+r.name+" for Marina Bay");
+      var lab=el("span","mono muted",fmtAdj(adj[key]||0,r.kind));
+      rg.addEventListener("input",function(){ adj[key]=Number(rg.value); lab.textContent=fmtAdj(adj[key],r.kind); });
+      rg.addEventListener("change",renderFav);
+      at.appendChild(rg); at.appendChild(lab); tr.appendChild(at); tb.appendChild(tr);
+    });
+    favTable.appendChild(tb);
+    favNote.textContent = basis==="points"
+      ? "Points as listed by ESPN before Singapore. I could not confirm whether the latest Malaysia result is included, so check against the official standings. Points ignore this circuit, so load your data file for pace-based rankings."
+      : (basis==="pace" ? "Median clean-lap pace per team over the recent rounds in your data file, as a gap to the fastest team (lower is better). Sliders move a team's gap by up to one percentage point."
+                        : "Best-lap or long-run pace from this weekend's session in your data file (lower is better). Re-run the script after each session to update it.");
+  }
+  function fmtAdj(v,kind){ return (v>0?"+":"")+(kind==="pct"? v+"%" : v.toFixed(2)+" pp"); }
+  basisEl.addEventListener("change",renderFav);
+
+  /* ---------- tabs, theme ---------- */
+  var tabs=Array.prototype.slice.call(document.querySelectorAll("nav.tabs button"));
+  function show(name){
+    tabs.forEach(function(b){ var on=b.dataset.tab===name; b.setAttribute("aria-selected",on?"true":"false"); document.getElementById(b.dataset.tab).hidden=!on; });
+    try{ history.replaceState(null,"","#"+name); }catch(e){}
+    if(name==="insights") requestAnimationFrame(drawTrace);
+  }
+  tabs.forEach(function(b){ b.addEventListener("click",function(){ show(b.dataset.tab); }); });
+  document.getElementById("themeBtn").addEventListener("click",function(){
+    var r=document.documentElement, cur=r.getAttribute("data-theme");
+    var dark = cur ? cur==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    r.setAttribute("data-theme", dark?"light":"dark"); drawTrace();
+  });
+  if(window.matchMedia) try{ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(){ drawTrace(); }); }catch(e){}
+
+  /* ---------- insights: loading ---------- */
+  var statusEl=document.getElementById("dataStatus"), clearBtn=document.getElementById("clearData"), insBody=document.getElementById("insBody");
+  function setData(d, from){
+    DATA=d;
+    if(!d){ insBody.hidden=true; statusEl.textContent="No data loaded."; clearBtn.hidden=true; refreshBasis(); renderFav(); drawOutlineMap(); return; }
+    var when=d.generated? new Date(d.generated).toLocaleString() : "unknown time";
+    statusEl.textContent="Loaded "+(from||"file")+", built "+when+".";
+    clearBtn.hidden=false; insBody.hidden=false;
+    document.getElementById("howto").open=false;
+    renderInsights(); refreshBasis(); renderFav();
+  }
+  function parseAndSet(text, from){
+    var d; try{ d=JSON.parse(text); }catch(e){ statusEl.textContent="That file is not valid JSON."; statusEl.className="status err"; return false; }
+    if(!d || typeof d!=="object" || !(d.history||d.reference_lap||d.form||d.weekend)){ statusEl.textContent="This does not look like a Pit Wall data file."; statusEl.className="status err"; return false; }
+    statusEl.className="status"; setData(d,from); return true;
+  }
+  document.getElementById("dataFile").addEventListener("change",function(ev){
+    var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){ if(parseAndSet(String(rd.result), f.name)){ try{ localStorage.setItem("pitwall.data", String(rd.result)); localStorage.setItem("pitwall.name", f.name); }catch(e){} } };
+    rd.onerror=function(){ statusEl.textContent="Could not read that file."; statusEl.className="status err"; };
+    rd.readAsText(f);
+  });
+  clearBtn.addEventListener("click",function(){ try{ localStorage.removeItem("pitwall.data"); localStorage.removeItem("pitwall.name"); }catch(e){} setData(null); });
+  document.getElementById("copyCmd").addEventListener("click",function(){
+    var box=document.getElementById("cmdBox"), btn=document.getElementById("copyCmd");
+    function sel(){ var r=document.createRange(); r.selectNodeContents(box); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent="Selected, press copy"; }
+    try{ navigator.clipboard.writeText(box.textContent).then(function(){ btn.textContent="Copied"; },sel); }catch(e){ sel(); }
+  });
+
+  /* ---------- insights: rendering ---------- */
+  var REF=null, TRACE_STATE=null;
+  function hbars(host, rows, opts){
+    clear(host); opts=opts||{};
+    if(!rows.length){ host.appendChild(el("p","hint","Not in the data file.")); return; }
+    var max=Math.max.apply(null, rows.map(function(r){return Math.abs(r.v);}))||1;
+    rows.forEach(function(r){
+      var row=el("div","hbar"); row.appendChild(el("span","nm",r.name));
+      var tr=el("div","track"), f=el("div","fill"+(r.hi?" hi":"")); f.style.width=Math.max(1,Math.abs(r.v)/max*100)+"%"; tr.appendChild(f); row.appendChild(tr);
+      row.appendChild(el("span","v",r.label)); host.appendChild(row);
+    });
+  }
+  function renderInsights(){
+    var d=DATA, list=document.getElementById("insList"); clear(list);
+    function add(parts){ var li=el("li"); parts.forEach(function(p){ li.appendChild(p.b? el("b","",p.t) : document.createTextNode(p.t)); }); list.appendChild(li); }
+    REF=d.reference_lap||null;
+    var hist=(d.history||[]);
+
+    if(hist.length){
+      var withSc=hist.filter(function(h){return h.sc>0;}).length;
+      var scl=mean(hist.map(function(h){return h.sc_laps;}));
+      add([{t:"Safety car in "},{t:withSc+" of "+hist.length,b:1},{t:" recent races here, averaging "+fixed(scl,0)+" laps behind it. "+(withSc/hist.length>=0.6?"Strategies are usually built to stay flexible for a stop under the safety car.":"Do not count on one: some editions ran clean.")}]);
+      var pw=hist.filter(function(h){return h.pole_won;}).length;
+      add([{t:"Pole converted to a win in "},{t:pw+" of "+hist.length,b:1},{t:" races. Drivers moved an average of "+fixed(mean(hist.map(function(h){return h.avg_places_moved;})),1)+" places between grid and flag."}]);
+      var pl=mean(hist.map(function(h){return h.pit_loss_s;}));
+      if(pl!=null) add([{t:"A green-flag pit stop costs about "},{t:fixed(pl,1)+" s",b:1},{t:" here, which is why a stop under the safety car is so valuable."}]);
+      var last=hist[hist.length-1];
+      if(last && last.tyres && last.tyres.length){
+        var ts=last.tyres.slice().sort(function(a,b){return b.deg_s_per_lap-a.deg_s_per_lap;});
+        add([{t:"In "+last.year+", the "},{t:ts[0].compound.toLowerCase(),b:1},{t:" tyre lost "+fixed(ts[0].deg_s_per_lap,3)+" s per lap of age"+(ts.length>1? ", against "+fixed(ts[ts.length-1].deg_s_per_lap,3)+" s for the "+ts[ts.length-1].compound.toLowerCase() : "")+" (fuel-corrected)."}]);
+      }
+    }
+    if(REF){
+      add([{t:"The reference lap ("+REF.year+", "+REF.driver+") is flat out for "},{t:fixed(REF.full_throttle_pct,0)+"%",b:1},{t:" of the lap and on the brakes for "+fixed(REF.braking_pct,0)+"%, with speed ranging from "+fixed(REF.min_speed,0)+" to "+fixed(REF.top_speed,0)+" km/h."}]);
+      var cs=(REF.corners||[]).filter(function(c){return num(c.min_speed);}).sort(function(a,b){return a.min_speed-b.min_speed;});
+      if(cs.length) add([{t:"Slowest corner: "},{t:"Turn "+cs[0].n+(cs[0].letter||""),b:1},{t:" at "+fixed(cs[0].min_speed,0)+" km/h. "+cs.filter(function(c){return c.min_speed<100;}).length+" corners are taken below 100 km/h, so traction out of slow corners decides lap time."}]);
+    }
+    var pace=paceRows();
+    if(pace.length>1) add([{t:"Best recent race pace: "},{t:pace[0].name,b:1},{t:", "+fixed(pace[1].v-pace[0].v,2)+" percentage points of lap time clear of "+pace[1].name+" across "+(d.form.rounds||[]).length+" recent rounds."}]);
+    var wkKey=["quali","sprint_quali","fp2","fp1","fp3","sprint"].filter(function(k){return d.weekend&&d.weekend[k];})[0];
+    if(wkKey){ var w=Object.keys(d.weekend[wkKey].best_lap||{}).map(function(t){return {name:shortTeam(t),v:d.weekend[wkKey].best_lap[t]};}).sort(function(a,b){return a.v-b.v;});
+      if(w.length>1) add([{t:"This weekend, "},{t:w[0].name,b:1},{t:" topped "+SESSION_NAMES[wkKey].toLowerCase()+" by "+fixed(w[1].v,2)+"% over "+w[1].name+"."}]); }
+    if(!list.children.length) add([{t:"The file loaded but holds no race data yet. Re-run build_data.py with internet access."}]);
+
+    drawSpeedMap(); drawCorners(); drawHistory(); drawPace(); requestAnimationFrame(drawTrace);
+  }
+  function paceRows(){
+    var d=DATA; if(!d||!d.form||!d.form.race_pace) return [];
+    var o={}; Object.keys(d.form.race_pace).forEach(function(t){ var m=mean(Object.keys(d.form.race_pace[t]).map(function(r){return d.form.race_pace[t][r];})); if(m!=null) o[shortTeam(t)]=m; });
+    return Object.keys(o).map(function(n){return {name:n,v:o[n]};}).sort(function(a,b){return a.v-b.v;});
+  }
+
+  function drawSpeedMap(){
+    var card=document.getElementById("speedCard"), svg=document.getElementById("speedSvg"); clear(svg);
+    if(!REF||!REF.points||!REF.points.length){ card.hidden=true; document.getElementById("cornerCard").hidden=true; document.getElementById("traceCard").hidden=true; return; }
+    card.hidden=false; document.getElementById("cornerCard").hidden=false; document.getElementById("traceCard").hidden=false;
+    document.getElementById("speedHint").textContent="Fastest qualifying lap of "+REF.year+" ("+REF.driver+", "+fixed(REF.lap_time_s,3)+" s) from car GPS, coloured by speed. Corner numbers from FastF1.";
+    var P=REF.points.map(function(p){return [p[0],-p[1],p[2],p[3],p[4],p[5]];});
+    var f=fitPoints(P.map(function(p){return [p[0],p[1]];}),600,440,34);
+    var sp=P.map(function(p){return p[2];}), lo=Math.min.apply(null,sp), hi=Math.max.apply(null,sp);
+    function bucket(v){ var t=(v-lo)/((hi-lo)||1); return Math.min(4,Math.floor(t*5)); }
+    var g=svgEl("g",{}); svg.appendChild(g);
+    for(var i=0;i<P.length-1;i++){
+      var a=f(P[i][0],P[i][1]), b=f(P[i+1][0],P[i+1][1]);
+      g.appendChild(svgEl("line",{x1:a[0].toFixed(1),y1:a[1].toFixed(1),x2:b[0].toFixed(1),y2:b[1].toFixed(1),stroke:"var(--sp"+(bucket((P[i][2]+P[i+1][2])/2)+1)+")","stroke-width":"8","stroke-linecap":"round"}));
+    }
+    var marks=svgEl("g",{}); svg.appendChild(marks);
+    (REF.corners||[]).forEach(function(c){
+      var q=f(c.x,-c.y);
+      marks.appendChild(svgEl("circle",{cx:q[0].toFixed(1),cy:q[1].toFixed(1),r:"11",fill:"var(--surface)",stroke:"var(--fg)","stroke-width":"1.5"}));
+      var t=svgEl("text",{x:q[0].toFixed(1),y:(q[1]+4.5).toFixed(1),"text-anchor":"middle","font-size":"13","font-weight":"600",fill:"var(--fg)"}); t.textContent=String(c.n); marks.appendChild(t);
+    });
+    var dot=svgEl("circle",{r:"7",fill:"var(--accent-fill)",stroke:"var(--surface)","stroke-width":"2",visibility:"hidden"}); svg.appendChild(dot);
+    var lg=document.getElementById("speedLegend"); clear(lg);
+    lg.appendChild(document.createTextNode(fixed(lo,0)+" km/h"));
+    var ramp=el("span","ramp"); for(var k=1;k<=5;k++){ var s=el("i"); s.style.background="var(--sp"+k+")"; ramp.appendChild(s); } lg.appendChild(ramp);
+    lg.appendChild(document.createTextNode(fixed(hi,0)+" km/h"));
+    var ro=document.getElementById("speedReadout");
+    function move(ev){
+      var pt=svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY; var m=svg.getScreenCTM(); if(!m) return; var loc=pt.matrixTransform(m.inverse());
+      var best=0, bd=1e18; for(var i=0;i<P.length;i++){ var q=f(P[i][0],P[i][1]); var dd=(q[0]-loc.x)*(q[0]-loc.x)+(q[1]-loc.y)*(q[1]-loc.y); if(dd<bd){bd=dd;best=i;} }
+      var q2=f(P[best][0],P[best][1]); dot.setAttribute("cx",q2[0]); dot.setAttribute("cy",q2[1]); dot.setAttribute("visibility","visible");
+      ro.textContent=fixed(P[best][2],0)+" km/h, throttle "+fixed(P[best][3],0)+"%, "+(P[best][4]?"braking":"no brake")+", "+fixed(P[best][5],0)+" m into the lap";
+    }
+    svg.onpointermove=move; svg.onpointerdown=move; svg.onpointerleave=function(){ dot.setAttribute("visibility","hidden"); };
+  }
+  function drawCorners(){
+    var host=document.getElementById("cornerBars");
+    if(!REF||!REF.corners){ clear(host); return; }
+    var cs=REF.corners.filter(function(c){return num(c.min_speed);}).sort(function(a,b){return a.min_speed-b.min_speed;}).slice(0,8);
+    hbars(host, cs.map(function(c,i){ return {name:"Turn "+c.n+(c.letter||""), v:c.min_speed, label:fixed(c.min_speed,0)+" km/h", hi:i===0}; }));
+  }
+  function drawHistory(){
+    var hist=(DATA.history||[]), tb=document.getElementById("histTable"); clear(tb);
+    document.getElementById("histCard").hidden=!hist.length;
+    if(!hist.length) return;
+    document.getElementById("histHint").textContent="Seasons on the current layout. Safety car counts come from the official track-status feed.";
+    var head=el("thead"), hr=el("tr");
+    ["Year","Winner","Pole won?","Safety cars","VSC","Laps under SC","Places moved","Pit loss","Stops"].forEach(function(h,i){ hr.appendChild(el("th", i>=3?"n":"", h)); });
+    head.appendChild(hr); tb.appendChild(head);
+    var body=el("tbody");
+    hist.forEach(function(h){
+      var tr=el("tr");
+      tr.appendChild(el("td","mono",String(h.year)));
+      var w=el("td"); w.appendChild(document.createTextNode(String(h.winner||"-")+" ")); w.appendChild(el("span","muted",shortTeam(h.winner_team)+(h.winner_grid? ", from P"+h.winner_grid : ""))); tr.appendChild(w);
+      tr.appendChild(el("td","",h.pole_won?"Yes":"No"));
+      [h.sc,h.vsc,h.sc_laps].forEach(function(v){ tr.appendChild(el("td","n",num(v)?String(v):"-")); });
+      tr.appendChild(el("td","n",fixed(h.avg_places_moved,1)));
+      tr.appendChild(el("td","n",num(h.pit_loss_s)?fixed(h.pit_loss_s,1)+" s":"-"));
+      tr.appendChild(el("td","n",fixed(h.avg_stops,1)));
+      body.appendChild(tr);
+    });
+    tb.appendChild(body);
+    hbars(document.getElementById("scBars"), hist.map(function(h){ return {name:String(h.year), v:h.sc_laps||0, label:(h.sc_laps||0)+" laps"}; }));
+    var last=hist[hist.length-1], ty=(last.tyres||[]).slice().sort(function(a,b){return b.deg_s_per_lap-a.deg_s_per_lap;});
+    hbars(document.getElementById("tyreBars"), ty.map(function(t,i){ return {name:t.compound.charAt(0)+t.compound.slice(1).toLowerCase()+" ("+t.laps+" laps)", v:Math.max(0,t.deg_s_per_lap), label:fixed(t.deg_s_per_lap,3)+" s", hi:i===0}; }));
+    document.getElementById("tyreNote").textContent= ty.length? "From the "+last.year+" race, fuel burn removed with a lap-number term. Low sample sizes make these indicative, not exact." : "No clean tyre data for the latest race.";
+  }
+  function drawPace(){
+    var card=document.getElementById("paceCard"), d=DATA;
+    var rows=paceRows();
+    var q={}; if(d.form&&d.form.quali) Object.keys(d.form.quali).forEach(function(t){ var m=mean(Object.keys(d.form.quali[t]).map(function(r){return d.form.quali[t][r];})); if(m!=null) q[shortTeam(t)]=m; });
+    var qrows=Object.keys(q).map(function(n){return {name:n,v:q[n]};}).sort(function(a,b){return a.v-b.v;});
+    var wk=d.weekend && Object.keys(d.weekend).length;
+    card.hidden=!(rows.length||qrows.length||wk);
+    if(card.hidden) return;
+    var rounds=(d.form&&d.form.rounds)||[];
+    document.getElementById("paceHint").textContent= rounds.length ? "Averaged over "+rounds.map(function(r){return r.name;}).join(", ")+". Gap is a percentage of lap time to the fastest team, so 0.50 means about half a percent, roughly 0.4 s on a 90-second lap." : "";
+    hbars(document.getElementById("paceBars"), rows.map(function(r,i){ return {name:r.name, v:r.v, label:"+"+fixed(r.v,2)+"%", hi:i===0}; }));
+    hbars(document.getElementById("qualiBars"), qrows.map(function(r,i){ return {name:r.name, v:r.v, label:"+"+fixed(r.v,2)+"%", hi:i===0}; }));
+    var wrap=document.getElementById("wkWrap"), tb=document.getElementById("wkTable"); clear(tb);
+    wrap.hidden=!wk; if(!wk) return;
+    var keys=["fp1","fp2","fp3","sprint_quali","sprint","quali"].filter(function(k){return d.weekend[k];});
+    var teams={}; keys.forEach(function(k){ Object.keys(d.weekend[k].best_lap||{}).forEach(function(t){ teams[shortTeam(t)]=1; }); });
+    var names=Object.keys(teams);
+    var head=el("thead"), hr=el("tr"); hr.appendChild(el("th","","Team"));
+    keys.forEach(function(k){ hr.appendChild(el("th","n",SESSION_NAMES[k]+" best")); if(k.indexOf("fp")===0) hr.appendChild(el("th","n",SESSION_NAMES[k]+" long run")); });
+    head.appendChild(hr); tb.appendChild(head);
+    function val(k,field,n){ var m=(d.weekend[k]||{})[field]||{}, out=null; Object.keys(m).forEach(function(t){ if(shortTeam(t)===n) out=m[t]; }); return out; }
+    var first=keys[keys.length-1];
+    names.sort(function(a,b){ var x=val(first,"best_lap",a), y=val(first,"best_lap",b); return (x==null?99:x)-(y==null?99:y); });
+    var body=el("tbody");
+    names.forEach(function(n){ var tr=el("tr"); var td=el("td"); var sw=el("span","sw"); sw.style.background=TEAM_COLORS[n]||"var(--muted)"; td.appendChild(sw); td.appendChild(document.createTextNode(n)); tr.appendChild(td);
+      keys.forEach(function(k){ var v=val(k,"best_lap",n); tr.appendChild(el("td","n",v==null?"-":"+"+fixed(v,2)+"%")); if(k.indexOf("fp")===0){ var lr=val(k,"long_run",n); tr.appendChild(el("td","n",lr==null?"-":"+"+fixed(lr,2)+"%")); } });
+      body.appendChild(tr); });
+    tb.appendChild(body);
+    document.getElementById("wkTitle").textContent="This weekend, gap to the fastest team in each session";
+  }
+
+  /* ---------- speed trace (canvas) ---------- */
+  var tc=document.getElementById("trace");
+  function drawTrace(hoverX){
+    var card=document.getElementById("traceCard");
+    if(!REF||!REF.points||!REF.points.length||card.hidden||document.getElementById("insights").hidden) return;
+    var dpr=window.devicePixelRatio||1, w=tc.clientWidth, h=tc.clientHeight; if(!w||!h) return;
+    tc.width=Math.round(w*dpr); tc.height=Math.round(h*dpr);
+    var c=tc.getContext("2d"); if(!c) return; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    var P=REF.points, L={l:44,r:12,t:22,b:26}, iw=w-L.l-L.r, ih=h-L.t-L.b;
+    var dmax=P[P.length-1][5]||REF.length_m||1, smax=Math.ceil(Math.max.apply(null,P.map(function(p){return p[2];}))/50)*50;
+    function X(dd){return L.l+dd/dmax*iw;} function Y(s){return L.t+ih-(s/smax)*ih;}
+    var ink=css("--fg"), mut=css("--muted"), grid=css("--grid"), s1=css("--s1"), acc=css("--accent-fill");
+    c.font="12px "+css("--body"); c.textBaseline="middle";
+    c.strokeStyle=grid; c.lineWidth=1; c.fillStyle=mut; c.textAlign="right";
+    for(var v=0; v<=smax; v+=50){ c.beginPath(); c.moveTo(L.l,Y(v)+.5); c.lineTo(w-L.r,Y(v)+.5); c.stroke(); c.fillText(String(v),L.l-6,Y(v)); }
+    // braking zones
+    c.fillStyle=acc; c.globalAlpha=.18;
+    var start=null; for(var i=0;i<P.length;i++){ if(P[i][4]&&start===null) start=P[i][5]; if((!P[i][4]||i===P.length-1)&&start!==null){ c.fillRect(X(start),L.t,Math.max(1,X(P[i][5])-X(start)),ih); start=null; } }
+    c.globalAlpha=1;
+    // line
+    c.strokeStyle=s1; c.lineWidth=2; c.lineJoin="round"; c.lineCap="round"; c.beginPath();
+    P.forEach(function(p,i){ if(i) c.lineTo(X(p[5]),Y(p[2])); else c.moveTo(X(p[5]),Y(p[2])); }); c.stroke();
+    // corners
+    c.fillStyle=mut; c.textAlign="center"; c.textBaseline="alphabetic";
+    (REF.corners||[]).forEach(function(k){ if(num(k.dist)) c.fillText(String(k.n),X(k.dist),L.t-8); });
+    c.textBaseline="top"; c.fillText("km/h",L.l,2);
+    c.textAlign="center"; for(var m=0;m<=dmax;m+=1000){ c.fillText((m/1000)+" km",X(m),h-L.b+8); }
+    TRACE_STATE={X:X,Y:Y,P:P,L:L,w:w,h:h,dmax:dmax};
+    if(typeof hoverX==="number"){
+      var d0=(hoverX-L.l)/iw*dmax, bi=0, bb=1e18; P.forEach(function(p,i){ var dd=Math.abs(p[5]-d0); if(dd<bb){bb=dd;bi=i;} });
+      var p=P[bi]; c.strokeStyle=ink; c.lineWidth=1; c.beginPath(); c.moveTo(X(p[5])+.5,L.t); c.lineTo(X(p[5])+.5,L.t+ih); c.stroke();
+      c.fillStyle=s1; c.strokeStyle=css("--surface"); c.lineWidth=2; c.beginPath(); c.arc(X(p[5]),Y(p[2]),5,0,Math.PI*2); c.fill(); c.stroke();
+      var near=null, nd=1e18; (REF.corners||[]).forEach(function(k){ var dd=Math.abs(k.dist-p[5]); if(dd<nd){nd=dd;near=k;} });
+      document.getElementById("traceReadout").textContent=fixed(p[2],0)+" km/h at "+fixed(p[5],0)+" m, throttle "+fixed(p[3],0)+"%, "+(p[4]?"braking":"no brake")+(near&&nd<120? " (near Turn "+near.n+")":"");
+    }
+  }
+  tc.addEventListener("pointermove",function(ev){ var r=tc.getBoundingClientRect(); drawTrace(ev.clientX-r.left); });
+  tc.addEventListener("pointerleave",function(){ drawTrace(); });
+  if(window.ResizeObserver) new ResizeObserver(function(){ drawTrace(); }).observe(tc); else window.addEventListener("resize",function(){ drawTrace(); });
+  document.getElementById("traceHint") && (document.getElementById("traceHint").textContent="Speed over the reference lap. Shaded bands are braking zones; numbers along the top are corners.");
+
+  /* ---------- replay (OpenF1) ---------- */
+  var API="https://api.openf1.org/v1";
+  var timer=null, running=false, drivers={}, polls=0;
+  var stEl=document.getElementById("liveStatus"), blEl=document.getElementById("liveBlocked");
+  var startBtn=document.getElementById("liveStart"), stopBtn=document.getElementById("liveStop");
+  function setStatus(t,err){ stEl.textContent=t; stEl.className="status"+(err?" err":""); }
+  function api(path){
+    return fetch(API+path).then(function(r){ if(!r.ok){ var e=new Error("HTTP "+r.status); e.status=r.status; throw e; } return r.json(); });
+  }
+  function latestBy(rows,key,pick){ var m={}; rows.forEach(function(r){ var k=r[key]; if(!m[k]||pick(r,m[k])) m[k]=r; }); return m; }
+  function fmtGap(v){ if(v==null) return "-"; if(typeof v==="number") return "+"+v.toFixed(3); return String(v); }
+  function tyreCell(st){
+    var td=el("td"); if(!st){ td.textContent="-"; return td; }
+    var c=(st.compound||"?").toUpperCase(); var col={SOFT:"var(--bad)",MEDIUM:"var(--accent)",HARD:"var(--fg)",INTERMEDIATE:"var(--good)",WET:"#4bb3f0"}[c]||"var(--muted)";
+    var b=el("span","tyre",c.charAt(0)); b.style.borderColor=col; td.appendChild(b);
+    td.appendChild(el("span","muted"," stint "+st.stint_number+" from lap "+st.lap_start)); return td;
+  }
+  function renderBoard(pos,gaps,stints){
+    var tb=document.getElementById("board"); clear(tb);
+    Object.keys(pos).map(function(k){return pos[k];}).sort(function(a,b){return a.position-b.position;}).forEach(function(p){
+      var dr=drivers[p.driver_number]||{}, g=gaps[p.driver_number]||{}, tr=el("tr");
+      tr.appendChild(el("td","n",String(p.position)));
+      var td=el("td"); var sw=el("span","sw"); sw.style.background=dr.team_colour?"#"+String(dr.team_colour).replace(/[^0-9a-fA-F]/g,"").slice(0,6):"var(--muted)";
+      td.appendChild(sw); td.appendChild(document.createTextNode((dr.name_acronym||("#"+p.driver_number))+"  ")); td.appendChild(el("span","muted",dr.team_name||"")); tr.appendChild(td);
+      tr.appendChild(el("td","n",fmtGap(g.gap_to_leader))); tr.appendChild(el("td","n",fmtGap(g.interval))); tr.appendChild(tyreCell(stints[p.driver_number]));
+      tb.appendChild(tr);
+    });
+  }
+  function poll(){
+    if(!running) return;
+    var pos, gaps, stints;
+    api("/position?session_key=latest").then(function(rows){ pos=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;}); return api("/intervals?session_key=latest"); })
+    .then(function(rows){ gaps=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;}); return api("/stints?session_key=latest"); })
+    .then(function(rows){
+      stints=latestBy(rows,"driver_number",function(a,b){return a.stint_number>b.stint_number;});
+      renderBoard(pos,gaps,stints); setStatus("Updated "+new Date().toLocaleTimeString()+". Refreshing every 12 s."); polls++;
+      if(polls%4===1) return side();
+    }).catch(fail).then(function(){ if(running) timer=setTimeout(poll,12000); });
+  }
+  function side(){
+    return api("/race_control?session_key=latest").then(function(rows){
+      var ul=document.getElementById("rc"); clear(ul);
+      rows.slice(-8).reverse().forEach(function(m){ var li=el("li"); li.appendChild(el("span","",String(m.message||m.category||""))); li.appendChild(el("span","mono muted", m.lap_number?("lap "+m.lap_number):"")); ul.appendChild(li); });
+      if(!rows.length) ul.appendChild(el("li","muted","No messages."));
+      return api("/weather?session_key=latest");
+    }).then(function(rows){
+      var w=rows[rows.length-1]; if(!w) return;
+      document.getElementById("wx").textContent="Air "+w.air_temperature+" C, track "+w.track_temperature+" C, humidity "+w.humidity+"%, wind "+w.wind_speed+" m/s, "+(w.rainfall?"rain":"dry");
+    });
+  }
+  function fail(e){
+    if(e && (e.status===401||e.status===403)){ setStatus("OpenF1 holds this session back until about 30 minutes after it ends. Try again then.",true); }
+    else if(e && e.status===429){ setStatus("Rate limit hit. Waiting before the next refresh.",true); }
+    else if(e && e.status===404){ setStatus("No data returned for the latest session yet.",true); }
+    else { blEl.hidden=false; blEl.textContent="This page could not reach OpenF1. Pages published on claude.ai block outside requests, so the replay only works when you open the downloaded file on your own device."; setStatus("Could not connect.",true); running=false; startBtn.disabled=false; stopBtn.disabled=true; }
+  }
+  function start(){
+    if(running) return; running=true; polls=0; blEl.hidden=true; startBtn.disabled=true; stopBtn.disabled=false; setStatus("Loading session...");
+    api("/sessions?session_key=latest").then(function(s){
+      var x=s[0]||{}; setStatus("Session: "+(x.session_name||"unknown")+" at "+(x.circuit_short_name||x.location||"")+". Loading drivers...");
+      return api("/drivers?session_key=latest");
+    }).then(function(rows){ drivers={}; rows.forEach(function(d){ drivers[d.driver_number]=d; }); poll(); }).catch(function(e){ fail(e); stop(); });
+  }
+  function stop(){ running=false; clearTimeout(timer); startBtn.disabled=false; stopBtn.disabled=true; }
+  startBtn.addEventListener("click",start); stopBtn.addEventListener("click",function(){ stop(); setStatus("Stopped."); });
+
+  /* ---------- boot ---------- */
+  refreshBasis(); renderFav();
+  var restored=false;
+  try{ var saved=localStorage.getItem("pitwall.data"); if(saved){ restored=parseAndSet(saved, localStorage.getItem("pitwall.name")||"saved file"); } }catch(e){}
+  if(!restored && location.protocol!=="blob:" && location.protocol!=="about:"){
+    try{ fetch("pitwall_data.json",{cache:"no-store"}).then(function(r){ return r.ok? r.text() : null; }).then(function(t){ if(t) parseAndSet(t,"pitwall_data.json"); }).catch(function(){}); }catch(e){}
+  }
+  var h=(location.hash||"").slice(1); if(["preview","insights","live","calendar"].indexOf(h)>-1) show(h);
+  window.__pitwall={setData:setData,parseAndSet:parseAndSet};
+})();
+</script>
