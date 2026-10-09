@@ -15,9 +15,12 @@ Currently set up for the 2026 Singapore Grand Prix (round 17).
 2. Build your data file (needs internet, Python 3.9+):
 
    ```bash
-   pip install fastf1 numpy pandas
-   python build_data.py --year 2026 --round 17 --venue Singapore
+   python3 -m venv .venv
+   .venv/bin/pip install fastf1 numpy pandas
+   .venv/bin/python build_data.py --year 2026 --round 17 --venue Singapore
    ```
+
+   Raspberry Pi OS and other recent Linux systems refuse a plain `pip install` (the "externally-managed-environment" error), so use the virtual environment above and always start the script with `.venv/bin/python`. On Windows, use `.venv\Scripts\python` instead.
 
    The first run downloads a lot of data and can take 10 to 20 minutes. Later runs use the local `.f1cache` folder and are much faster. Re-run it after each session of the weekend to pick up new practice, sprint and qualifying data.
 3. Open the **Insights** tab and choose **Load pitwall_data.json**. The page remembers the file in your browser.
