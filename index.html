@@ -323,11 +323,11 @@ python build_data.py --year 2026 --round 17 --venue Singapore
   <section id="live" class="grid" hidden aria-labelledby="t-live">
     <div class="card c12">
       <h2>Session replay</h2>
-      <p class="hint">Loads the latest finished session from the OpenF1 API, free of charge: positions, gaps, tyres, race control and weather. OpenF1 releases a session's data about 30 minutes after it ends. For the live race, use F1TV's own timing.</p>
+      <p class="hint">Loads the latest finished session from the OpenF1 API, free of charge: final positions, gaps, tyres, race control and weather. OpenF1 releases a session's data about 30 minutes after it ends. A load makes 7 requests, spaced out to stay inside the free limit of 3 a second and 30 a minute, so it takes about 10 seconds. Wait a minute before loading again. For the live race, use F1TV's own timing.</p>
       <div id="liveBlocked" class="status err" hidden></div>
       <div class="row" style="margin-bottom:12px">
         <button class="btn primary" id="liveStart">Load latest session</button>
-        <button class="btn" id="liveStop" disabled>Stop</button>
+        
       </div>
       <div class="status" id="liveStatus">Not started.</div>
     </div>
@@ -799,12 +799,17 @@ python build_data.py --year 2026 --round 17 --venue Singapore
 
   /* ---------- replay (OpenF1) ---------- */
   var API="https://api.openf1.org/v1";
-  var timer=null, running=false, drivers={}, polls=0;
+  var running=false, drivers={}, lastReq=0, sessName="";
   var stEl=document.getElementById("liveStatus"), blEl=document.getElementById("liveBlocked");
-  var startBtn=document.getElementById("liveStart"), stopBtn=document.getElementById("liveStop");
+  var startBtn=document.getElementById("liveStart");
   function setStatus(t,err){ stEl.textContent=t; stEl.className="status"+(err?" err":""); }
   function api(path){
-    return fetch(API+path).then(function(r){ if(!r.ok){ var e=new Error("HTTP "+r.status); e.status=r.status; throw e; } return r.json(); });
+    // One request at a time, at least 1.2 s apart, so we stay under OpenF1's free limits.
+    var wait=Math.max(0,lastReq+1200-Date.now()); lastReq=Date.now()+wait;
+    return new Promise(function(res){ setTimeout(res,wait); }).then(function(){ return fetch(API+path); }).then(function(r){
+      if(!r.ok){ var e=new Error("HTTP "+r.status); e.status=r.status; throw e; }
+      return r.json();
+    });
   }
   function latestBy(rows,key,pick){ var m={}; rows.forEach(function(r){ var k=r[key]; if(!m[k]||pick(r,m[k])) m[k]=r; }); return m; }
   function fmtGap(v){ if(v==null) return "-"; if(typeof v==="number") return "+"+v.toFixed(3); return String(v); }
@@ -825,43 +830,52 @@ python build_data.py --year 2026 --round 17 --venue Singapore
       tb.appendChild(tr);
     });
   }
-  function poll(){
-    if(!running) return;
-    var pos, gaps, stints;
-    api("/position?session_key=latest").then(function(rows){ pos=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;}); return api("/intervals?session_key=latest"); })
-    .then(function(rows){ gaps=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;}); return api("/stints?session_key=latest"); })
-    .then(function(rows){
-      stints=latestBy(rows,"driver_number",function(a,b){return a.stint_number>b.stint_number;});
-      renderBoard(pos,gaps,stints); setStatus("Updated "+new Date().toLocaleTimeString()+". Refreshing every 12 s."); polls++;
-      if(polls%4===1) return side();
-    }).catch(fail).then(function(){ if(running) timer=setTimeout(poll,12000); });
+  function fail(e){
+    var msg;
+    if(e&&e.status===429){ msg="OpenF1's free limit was reached (3 requests a second, 30 a minute). Wait a minute, then load again."; }
+    else if(e&&(e.status===401||e.status===403)){ msg="OpenF1 keeps a session for sponsors from 30 minutes before it starts until 30 minutes after it ends. Load it after that, or use F1TV for the live session."; }
+    else if(e&&e.status===404){ msg="OpenF1 has no data for the latest session yet."; }
+    else if(e&&e.status){ msg="OpenF1 answered with an error ("+e.status+"). Try again in a minute."; }
+    else { blEl.hidden=false; blEl.textContent="This page could not reach OpenF1. Pages published on claude.ai block outside requests, so the replay only works when you open the page from your own device or server."; msg="Could not connect."; }
+    setStatus(msg,true);
   }
-  function side(){
-    return api("/race_control?session_key=latest").then(function(rows){
+  function finish(cool){ running=false; if(cool){ setTimeout(function(){ startBtn.disabled=false; },cool); } else { startBtn.disabled=false; } }
+  function start(){
+    if(running) return; running=true; startBtn.disabled=true; blEl.hidden=true;
+    var sk, since="", pos, gaps, stints, steps=7;
+    function prog(n,what){ setStatus("Loading "+what+" ("+n+" of "+steps+")..."); }
+    prog(1,"session");
+    api("/sessions?session_key=latest").then(function(s){
+      var x=s[0]; if(!x){ var e=new Error("none"); e.status=404; throw e; }
+      sk=x.session_key; sessName=(x.session_name||"Session")+" at "+(x.circuit_short_name||x.location||"");
+      if(x.date_end){ var t=Date.parse(x.date_end); if(isFinite(t)) since="&date>="+encodeURIComponent(new Date(t-15*60000).toISOString()); }
+      prog(2,"drivers"); return api("/drivers?session_key="+sk);
+    }).then(function(rows){
+      drivers={}; rows.forEach(function(d){ drivers[d.driver_number]=d; });
+      prog(3,"positions"); return api("/position?session_key="+sk+since);
+    }).then(function(rows){
+      pos=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;});
+      prog(4,"gaps"); return api("/intervals?session_key="+sk+since);
+    }).then(function(rows){
+      gaps=latestBy(rows,"driver_number",function(a,b){return a.date>b.date;});
+      prog(5,"tyres"); return api("/stints?session_key="+sk);
+    }).then(function(rows){
+      stints=latestBy(rows,"driver_number",function(a,b){return a.stint_number>b.stint_number;});
+      renderBoard(pos,gaps,stints);
+      prog(6,"race control"); return api("/race_control?session_key="+sk);
+    }).then(function(rows){
       var ul=document.getElementById("rc"); clear(ul);
       rows.slice(-8).reverse().forEach(function(m){ var li=el("li"); li.appendChild(el("span","",String(m.message||m.category||""))); li.appendChild(el("span","mono muted", m.lap_number?("lap "+m.lap_number):"")); ul.appendChild(li); });
       if(!rows.length) ul.appendChild(el("li","muted","No messages."));
-      return api("/weather?session_key=latest");
+      prog(7,"weather"); return api("/weather?session_key="+sk);
     }).then(function(rows){
-      var w=rows[rows.length-1]; if(!w) return;
-      document.getElementById("wx").textContent="Air "+w.air_temperature+" C, track "+w.track_temperature+" C, humidity "+w.humidity+"%, wind "+w.wind_speed+" m/s, "+(w.rainfall?"rain":"dry");
-    });
+      var w=rows[rows.length-1];
+      if(w) document.getElementById("wx").textContent="Air "+w.air_temperature+" C, track "+w.track_temperature+" C, humidity "+w.humidity+"%, wind "+w.wind_speed+" m/s, "+(w.rainfall?"rain":"dry");
+      setStatus("Showing "+sessName+". Loaded "+new Date().toLocaleTimeString()+". Wait a minute before loading again.");
+      finish(0);
+    }).catch(function(e){ fail(e); finish(e&&e.status===429?30000:0); });
   }
-  function fail(e){
-    if(e && (e.status===401||e.status===403)){ setStatus("OpenF1 holds this session back until about 30 minutes after it ends. Try again then.",true); }
-    else if(e && e.status===429){ setStatus("Rate limit hit. Waiting before the next refresh.",true); }
-    else if(e && e.status===404){ setStatus("No data returned for the latest session yet.",true); }
-    else { blEl.hidden=false; blEl.textContent="This page could not reach OpenF1. Pages published on claude.ai block outside requests, so the replay only works when you open the downloaded file on your own device."; setStatus("Could not connect.",true); running=false; startBtn.disabled=false; stopBtn.disabled=true; }
-  }
-  function start(){
-    if(running) return; running=true; polls=0; blEl.hidden=true; startBtn.disabled=true; stopBtn.disabled=false; setStatus("Loading session...");
-    api("/sessions?session_key=latest").then(function(s){
-      var x=s[0]||{}; setStatus("Session: "+(x.session_name||"unknown")+" at "+(x.circuit_short_name||x.location||"")+". Loading drivers...");
-      return api("/drivers?session_key=latest");
-    }).then(function(rows){ drivers={}; rows.forEach(function(d){ drivers[d.driver_number]=d; }); poll(); }).catch(function(e){ fail(e); stop(); });
-  }
-  function stop(){ running=false; clearTimeout(timer); startBtn.disabled=false; stopBtn.disabled=true; }
-  startBtn.addEventListener("click",start); stopBtn.addEventListener("click",function(){ stop(); setStatus("Stopped."); });
+  startBtn.addEventListener("click",start);
 
   /* ---------- boot ---------- */
   refreshBasis(); renderFav();
