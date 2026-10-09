@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f2f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0e14" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 <title>Pit Wall</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
@@ -22,7 +32,9 @@
   --sp1:#184f95; --sp2:#256abf; --sp3:#3987e5; --sp4:#6da7ec; --sp5:#9ec5f4; color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
 *{box-sizing:border-box}
-.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 header.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--line)}
 .brand{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,6vw,58px);line-height:.95;margin:6px 0 0;text-transform:uppercase;text-wrap:balance}
@@ -52,7 +64,7 @@ h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:.1em
 .segs{display:flex;gap:3px}.segs i{height:10px;flex:1;background:var(--surface2)}.segs i.on{background:var(--accent-fill)}
 .meter small{font-family:var(--mono);color:var(--muted);font-size:12px;white-space:nowrap}
 .meter .nm{font-weight:600}
-.map svg{width:100%;height:auto;display:block;max-height:420px}
+.map svg{width:100%;height:auto;display:block;touch-action:pan-y}
 .map .road{fill:none;stroke:var(--fg);stroke-width:7;stroke-linejoin:round;stroke-linecap:round;opacity:.8}
 .map .edge{fill:none;stroke:var(--surface);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .map .note{fill:var(--muted);font:13px var(--body)}
@@ -93,7 +105,7 @@ ul.plain li:first-child{border-top:0}
 .legend .ramp{display:flex}.legend .ramp i{width:28px;height:10px;display:block}
 .legend .ramp i+i{margin-left:2px}
 .readout{font-family:var(--mono);font-size:13px;min-height:20px;margin-top:8px;color:var(--fg)}
-canvas.trace{width:100%;height:260px;display:block;touch-action:pan-y}
+canvas.trace{width:100%;height:clamp(200px,52vw,280px);display:block;touch-action:pan-y}
 .hbar{display:grid;grid-template-columns:minmax(96px,160px) 1fr minmax(60px,auto);gap:10px;align-items:center;padding-block:5px}
 .hbar .track{height:18px;background:transparent;position:relative}
 .hbar .fill{height:18px;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
@@ -103,7 +115,72 @@ canvas.trace{width:100%;height:260px;display:block;touch-action:pan-y}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .cols>div{min-width:0}
 @media (prefers-reduced-motion:no-preference){.hbar .fill,.bar i{transition:width .25s ease}}
+
+/* ---- touch and small screens ---- */
+select{max-width:100%;font-size:16px}
+.scroll td:first-child,.scroll th:first-child{position:sticky;left:0;background:var(--surface);z-index:1}
+.flist .frow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.flist .frow:first-child{border-top:0}
+.frow .rk{font-family:var(--mono);color:var(--muted);text-align:right}
+.frow .tm{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.frow .vl{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.frow .bar{grid-column:2 / -1}
+.frow .adj{grid-column:2 / -1;display:none;grid-template-columns:minmax(0,1fr) 76px;gap:10px;align-items:center}
+.flist.adjust-on .adj{display:grid}
+.frow .adj .mono{text-align:right}
+.hbar .track{min-width:0}
+@media (pointer:coarse){
+  .btn,select,nav.tabs button{min-height:44px}
+  input[type=range]{height:32px}
+}
+@media (max-width:820px){
+  .wrap{padding-block:14px calc(80px + env(safe-area-inset-bottom,0px))}
+  header.top{gap:12px;align-items:stretch}
+  header.top>div:last-child{width:100%}
+  .count{width:100%}
+  .count div{flex:1;min-width:0;padding:6px 4px}
+  .count b{font-size:22px}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;margin:0;gap:0;flex-wrap:nowrap;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+  nav.tabs button{flex:1;min-width:0;border:0;border-right:1px solid var(--line);padding:14px 4px;min-height:52px;font-size:14px;letter-spacing:.08em}
+  nav.tabs button:last-child{border-right:0}
+  .grid{gap:12px}
+  .card{padding:14px}
+  .btn,select{min-height:44px}
+  td.n{white-space:nowrap}
+}
+@media (max-width:600px){
+  h1{font-size:34px}
+  h2{font-size:20px}
+  .brand{font-size:13px;letter-spacing:.1em}
+  .hbar .nm{white-space:normal;overflow:visible;line-height:1.25}
+  .hide-m{display:none}
+  th,td{padding:6px 5px}
+  .facts b{font-size:15px}
+  .fav b{font-size:24px}
+  .meter{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nm s" "bar bar";gap:4px 12px}
+  .meter .nm{grid-area:nm}
+  .meter .segs{grid-area:bar}
+  .meter small{grid-area:s}
+  .hbar{grid-template-columns:minmax(64px,100px) minmax(0,1fr) auto;gap:8px}
+  .hbar .nm{font-size:13px}
+  ul.plain li{flex-direction:column;gap:2px}
+  table.stack thead{display:none}
+  table.stack,table.stack tbody,table.stack tr{display:block}
+  table.stack tr{padding:12px 0;border-bottom:1px solid var(--line)}
+  table.stack td{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;border:0;padding:3px 0;position:static}
+  table.stack td::before{content:attr(data-label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  table.stack td.cal-title,table.stack td.cal-note{grid-template-columns:minmax(0,1fr)}
+  table.stack td.cal-title{font-weight:600;font-size:16px}
+  table.stack td.cal-title::before,table.stack td.cal-note::before{display:none}
+  table.stack .segs{max-width:160px}
+}
+@media (max-width:360px){
+  nav.tabs button{font-size:12px;letter-spacing:.02em;padding-left:2px;padding-right:2px}
+  .count b{font-size:20px}
+}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -149,9 +226,9 @@ canvas.trace{width:100%;height:260px;display:block;touch-action:pan-y}
     <div class="card c7">
       <h2>Favourite for this race</h2>
       <p class="hint">Pick what the ranking is based on. Drag a slider if you think a team gets a boost or a penalty at Marina Bay.</p>
-      <div class="row" style="margin-bottom:12px"><label for="basis" class="muted" style="font-size:13px">Based on</label><select id="basis"></select></div>
+      <div class="row" style="margin-bottom:12px"><label for="basis" class="muted" style="font-size:13px">Based on</label><select id="basis"></select><button class="btn" id="adjToggle" type="button" aria-pressed="false">Adjust teams</button></div>
       <div class="fav" id="fav"></div>
-      <div class="scroll"><table id="favTable" aria-label="Team ranking and adjustment"></table></div>
+      <div class="flist" id="favList" role="list" aria-label="Team ranking"></div>
       <p class="hint" style="margin:12px 0 0" id="favNote"></p>
     </div>
 
@@ -268,7 +345,7 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     <div class="card c12">
       <h2>Rest of the season</h2>
       <p class="hint">Track character for each remaining round. Dates for the first four rounds come from RacingNews365; Qatar and Abu Dhabi are from my own knowledge of the calendar, so confirm them. Downforce and overtaking are my reading of each circuit, scaled 1 to 5.</p>
-      <div class="scroll"><table>
+      <div class="scroll"><table class="stack">
         <thead><tr><th>Round</th><th>Date</th><th>Circuit type</th><th>Downforce</th><th>Overtaking</th><th>What shapes the race</th></tr></thead>
         <tbody id="cal"></tbody>
       </table></div>
@@ -369,26 +446,31 @@ python build_data.py --year 2026 --round 17 --venue Singapore
   WINNERS.forEach(function(w){ var li=el("li"); li.appendChild(el("span","mono",w[0])); li.appendChild(el("span","",w[1])); wEl.appendChild(li); });
   var calEl=document.getElementById("cal");
   CAL.forEach(function(c){
-    var tr=el("tr"); tr.appendChild(el("td","",c.r)); tr.appendChild(el("td","mono",c.d)); tr.appendChild(el("td","",c.ty));
-    var a=el("td"); a.appendChild(segs(c.df)); var b=el("td"); b.appendChild(segs(c.ov));
-    tr.appendChild(a); tr.appendChild(b); tr.appendChild(el("td","muted",c.w)); calEl.appendChild(tr);
+    var tr=el("tr");
+    function cell(label,node,cls){ var t=el("td",cls||""); t.setAttribute("data-label",label); if(typeof node==="string") t.textContent=node; else t.appendChild(node); tr.appendChild(t); return t; }
+    cell("Round",c.r,"cal-title"); cell("Date",c.d,"mono"); cell("Type",c.ty); cell("Downforce",segs(c.df)); cell("Overtaking",segs(c.ov)); cell("Notes",c.w,"muted cal-note");
+    calEl.appendChild(tr);
   });
 
   /* ---------- preview map (real outline) ---------- */
+  function sizeFor(svg){
+    var w=Math.round(svg.getBoundingClientRect().width)||(svg.parentNode&&svg.parentNode.clientWidth)||600;
+    return Math.max(260,Math.min(w,900));
+  }
   function drawOutlineMap(){
     var svg=document.getElementById("mapSvg"); clear(svg);
+    var w=sizeFor(svg), h=Math.round(w*0.74); svg.setAttribute("viewBox","0 0 "+w+" "+h);
     var lat0=OUTLINE.reduce(function(s,p){return s+p[1];},0)/OUTLINE.length, k=Math.cos(lat0*Math.PI/180);
     var pts=OUTLINE.map(function(p){ return [p[0]*k, -p[1]]; });
-    var f=fitPoints(pts,600,440,30);
+    var f=fitPoints(pts,w,h,Math.round(w*0.06));
     var d=pts.map(function(p,i){ var q=f(p[0],p[1]); return (i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1); }).join(" ")+" Z";
-    svg.appendChild(svgEl("path",{"class":"road",d:d}));
-    var t=svgEl("text",{"class":"note",x:"16",y:"430"}); t.textContent="Outline: public GeoJSON dataset (bacinger/f1-circuits), north up."; svg.appendChild(t);
+    var road=svgEl("path",{"class":"road",d:d}); road.setAttribute("stroke-width",String(Math.max(5,Math.round(w/80)))); svg.appendChild(road);
   }
   drawOutlineMap();
 
   /* ---------- favourites ---------- */
   var adj={};
-  var basisEl=document.getElementById("basis"), favEl=document.getElementById("fav"), favTable=document.getElementById("favTable"), favNote=document.getElementById("favNote");
+  var basisEl=document.getElementById("basis"), favEl=document.getElementById("fav"), favList=document.getElementById("favList"), favNote=document.getElementById("favNote");
   function basisOptions(){
     var o=[{id:"points",label:"Season points"}];
     if(DATA && DATA.form && DATA.form.race_pace && Object.keys(DATA.form.race_pace).length) o.push({id:"pace",label:"Recent race pace"});
@@ -425,7 +507,7 @@ python build_data.py --year 2026 --round 17 --venue Singapore
       r.score = r.kind==="pct" ? r.raw*(1+a/100) : -(r.raw+a);
     });
     rows.sort(function(a,b){return b.score-a.score;});
-    favEl.textContent=""; clear(favTable);
+    favEl.textContent=""; clear(favList);
     if(!rows.length){ favEl.appendChild(el("span","muted","No team data for this basis yet.")); return; }
     favEl.appendChild(el("span","pill p","Favourite"));
     favEl.appendChild(el("b","",rows[0].name));
@@ -435,27 +517,22 @@ python build_data.py --year 2026 --round 17 --venue Singapore
       else { var d=(rows[0].score-rows[1].score); txt = "faster than "+rows[1].name+" by "+fixed(d,2)+" percentage points of lap time"; }
       favEl.appendChild(el("span","muted",txt));
     }
-    var hr=el("tr"), thead=el("thead");
-    ["#","Team","Value","","Your adjustment"].forEach(function(h,i){ hr.appendChild(el("th", i===0||i===2?"n":"", h)); });
-    thead.appendChild(hr); favTable.appendChild(thead);
     var scores=rows.map(function(r){return r.score;}), top=Math.max.apply(null,scores), low=Math.min.apply(null,scores);
-    var tb=el("tbody");
     rows.forEach(function(r,i){
-      var tr=el("tr"); tr.appendChild(el("td","n",String(i+1)));
-      var td=el("td"); var sw=el("span","sw"); sw.style.background=TEAM_COLORS[r.name]||"var(--muted)"; td.appendChild(sw); td.appendChild(document.createTextNode(r.name)); tr.appendChild(td);
-      tr.appendChild(el("td","n",r.show));
+      var key=basis+"|"+r.name, row=el("div","frow"); row.setAttribute("role","listitem");
+      row.appendChild(el("span","rk",String(i+1)));
+      var nm=el("span","tm"); var sw=el("span","sw"); sw.style.background=TEAM_COLORS[r.name]||"var(--muted)"; nm.appendChild(sw); nm.appendChild(document.createTextNode(r.name)); row.appendChild(nm);
+      row.appendChild(el("span","vl",r.show));
       var frac = r.kind==="pct" ? (top? Math.max(0.02,r.score/top) : 0.02) : (top===low ? 1 : Math.max(0.04,(r.score-low)/(top-low)));
-      var bt=el("td"); var bar=el("div","bar"); var fill=el("i"); fill.style.width=(frac*100)+"%"; fill.style.background=TEAM_COLORS[r.name]||"var(--s1)"; bar.appendChild(fill); bt.appendChild(bar); tr.appendChild(bt);
-      var at=el("td"); var rg=document.createElement("input"); rg.type="range"; rg.id="adj-"+i;
-      var key=basis+"|"+r.name;
+      var bar=el("div","bar"); var fill=el("i"); fill.style.width=(frac*100)+"%"; fill.style.background=TEAM_COLORS[r.name]||"var(--s1)"; bar.appendChild(fill); row.appendChild(bar);
+      var aw=el("div","adj"); var rg=document.createElement("input"); rg.type="range"; rg.id="adj-"+i;
       if(r.kind==="pct"){ rg.min="-30"; rg.max="30"; rg.step="5"; } else { rg.min="-1"; rg.max="1"; rg.step="0.25"; }
       rg.value=String(adj[key]||0); rg.setAttribute("aria-label","Adjust "+r.name+" for Marina Bay");
       var lab=el("span","mono muted",fmtAdj(adj[key]||0,r.kind));
       rg.addEventListener("input",function(){ adj[key]=Number(rg.value); lab.textContent=fmtAdj(adj[key],r.kind); });
       rg.addEventListener("change",renderFav);
-      at.appendChild(rg); at.appendChild(lab); tr.appendChild(at); tb.appendChild(tr);
+      aw.appendChild(rg); aw.appendChild(lab); row.appendChild(aw); favList.appendChild(row);
     });
-    favTable.appendChild(tb);
     favNote.textContent = basis==="points"
       ? "Points as listed by ESPN before Singapore. I could not confirm whether the latest Malaysia result is included, so check against the official standings. Points ignore this circuit, so load your data file for pace-based rankings."
       : (basis==="pace" ? "Median clean-lap pace per team over the recent rounds in your data file, as a gap to the fastest team (lower is better). Sliders move a team's gap by up to one percentage point."
@@ -463,15 +540,20 @@ python build_data.py --year 2026 --round 17 --venue Singapore
   }
   function fmtAdj(v,kind){ return (v>0?"+":"")+(kind==="pct"? v+"%" : v.toFixed(2)+" pp"); }
   basisEl.addEventListener("change",renderFav);
+  var adjBtn=document.getElementById("adjToggle");
+  function setAdj(on){ favList.classList.toggle("adjust-on",on); adjBtn.setAttribute("aria-pressed",on?"true":"false"); adjBtn.textContent=on?"Hide adjustments":"Adjust teams"; }
+  adjBtn.addEventListener("click",function(){ setAdj(!favList.classList.contains("adjust-on")); });
+  setAdj(!!(window.matchMedia&&window.matchMedia("(min-width:821px)").matches));
 
   /* ---------- tabs, theme ---------- */
   var tabs=Array.prototype.slice.call(document.querySelectorAll("nav.tabs button"));
-  function show(name){
+  function show(name,scroll){
     tabs.forEach(function(b){ var on=b.dataset.tab===name; b.setAttribute("aria-selected",on?"true":"false"); document.getElementById(b.dataset.tab).hidden=!on; });
     try{ history.replaceState(null,"","#"+name); }catch(e){}
-    if(name==="insights") requestAnimationFrame(drawTrace);
+    if(scroll){ try{ window.scrollTo(0,0); }catch(e){} }
+    requestAnimationFrame(function(){ redrawMaps(); drawTrace(); });
   }
-  tabs.forEach(function(b){ b.addEventListener("click",function(){ show(b.dataset.tab); }); });
+  tabs.forEach(function(b){ b.addEventListener("click",function(){ show(b.dataset.tab,true); }); });
   document.getElementById("themeBtn").addEventListener("click",function(){
     var r=document.documentElement, cur=r.getAttribute("data-theme");
     var dark = cur ? cur==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -565,21 +647,26 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     var card=document.getElementById("speedCard"), svg=document.getElementById("speedSvg"); clear(svg);
     if(!REF||!REF.points||!REF.points.length){ card.hidden=true; document.getElementById("cornerCard").hidden=true; document.getElementById("traceCard").hidden=true; return; }
     card.hidden=false; document.getElementById("cornerCard").hidden=false; document.getElementById("traceCard").hidden=false;
-    document.getElementById("speedHint").textContent="Fastest qualifying lap of "+REF.year+" ("+REF.driver+", "+fixed(REF.lap_time_s,3)+" s) from car GPS, coloured by speed. Corner numbers from FastF1.";
+    document.getElementById("speedHint").textContent="Fastest qualifying lap of "+REF.year+" ("+REF.driver+", "+fixed(REF.lap_time_s,3)+" s) from car GPS, coloured by speed. Slowest corners are numbered first where space allows; the trace below shows every corner.";
+    var w=sizeFor(svg), h=Math.round(w*0.74); svg.setAttribute("viewBox","0 0 "+w+" "+h);
     var P=REF.points.map(function(p){return [p[0],-p[1],p[2],p[3],p[4],p[5]];});
-    var f=fitPoints(P.map(function(p){return [p[0],p[1]];}),600,440,34);
+    var f=fitPoints(P.map(function(p){return [p[0],p[1]];}),w,h,Math.round(w*0.07));
     var sp=P.map(function(p){return p[2];}), lo=Math.min.apply(null,sp), hi=Math.max.apply(null,sp);
     function bucket(v){ var t=(v-lo)/((hi-lo)||1); return Math.min(4,Math.floor(t*5)); }
+    var lw=String(Math.max(5,Math.round(w/70)));
     var g=svgEl("g",{}); svg.appendChild(g);
     for(var i=0;i<P.length-1;i++){
       var a=f(P[i][0],P[i][1]), b=f(P[i+1][0],P[i+1][1]);
-      g.appendChild(svgEl("line",{x1:a[0].toFixed(1),y1:a[1].toFixed(1),x2:b[0].toFixed(1),y2:b[1].toFixed(1),stroke:"var(--sp"+(bucket((P[i][2]+P[i+1][2])/2)+1)+")","stroke-width":"8","stroke-linecap":"round"}));
+      g.appendChild(svgEl("line",{x1:a[0].toFixed(1),y1:a[1].toFixed(1),x2:b[0].toFixed(1),y2:b[1].toFixed(1),stroke:"var(--sp"+(bucket((P[i][2]+P[i+1][2])/2)+1)+")","stroke-width":lw,"stroke-linecap":"round"}));
     }
-    var marks=svgEl("g",{}); svg.appendChild(marks);
-    (REF.corners||[]).forEach(function(c){
-      var q=f(c.x,-c.y);
-      marks.appendChild(svgEl("circle",{cx:q[0].toFixed(1),cy:q[1].toFixed(1),r:"11",fill:"var(--surface)",stroke:"var(--fg)","stroke-width":"1.5"}));
-      var t=svgEl("text",{x:q[0].toFixed(1),y:(q[1]+4.5).toFixed(1),"text-anchor":"middle","font-size":"13","font-weight":"600",fill:"var(--fg)"}); t.textContent=String(c.n); marks.appendChild(t);
+    var cr=w<480?9:11, fs=w<480?11:13, marks=svgEl("g",{}), placed=[]; svg.appendChild(marks);
+    (REF.corners||[]).slice().sort(function(a,b){ return (num(a.min_speed)?a.min_speed:999)-(num(b.min_speed)?b.min_speed:999); }).forEach(function(c){
+      var q=f(c.x,-c.y), min2=(2*cr+2)*(2*cr+2);
+      var clash=placed.some(function(p){ var dx=p[0]-q[0], dy=p[1]-q[1]; return dx*dx+dy*dy<min2; });
+      if(clash){ marks.appendChild(svgEl("circle",{cx:q[0].toFixed(1),cy:q[1].toFixed(1),r:"2.5",fill:"var(--fg)"})); return; }
+      placed.push(q);
+      marks.appendChild(svgEl("circle",{cx:q[0].toFixed(1),cy:q[1].toFixed(1),r:String(cr),fill:"var(--surface)",stroke:"var(--fg)","stroke-width":"1.5"}));
+      var t=svgEl("text",{x:q[0].toFixed(1),y:(q[1]+fs*0.35).toFixed(1),"text-anchor":"middle","font-size":String(fs),"font-weight":"600",fill:"var(--fg)"}); t.textContent=String(c.n); marks.appendChild(t);
     });
     var dot=svgEl("circle",{r:"7",fill:"var(--accent-fill)",stroke:"var(--surface)","stroke-width":"2",visibility:"hidden"}); svg.appendChild(dot);
     var lg=document.getElementById("speedLegend"); clear(lg);
@@ -594,6 +681,7 @@ python build_data.py --year 2026 --round 17 --venue Singapore
       ro.textContent=fixed(P[best][2],0)+" km/h, throttle "+fixed(P[best][3],0)+"%, "+(P[best][4]?"braking":"no brake")+", "+fixed(P[best][5],0)+" m into the lap";
     }
     svg.onpointermove=move; svg.onpointerdown=move; svg.onpointerleave=function(){ dot.setAttribute("visibility","hidden"); };
+    document.getElementById("speedReadout").textContent="Touch or move over the track for speed, throttle and braking.";
   }
   function drawCorners(){
     var host=document.getElementById("cornerBars");
@@ -607,18 +695,20 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     if(!hist.length) return;
     document.getElementById("histHint").textContent="Seasons on the current layout. Safety car counts come from the official track-status feed.";
     var head=el("thead"), hr=el("tr");
-    ["Year","Winner","Pole won?","Safety cars","VSC","Laps under SC","Places moved","Pit loss","Stops"].forEach(function(h,i){ hr.appendChild(el("th", i>=3?"n":"", h)); });
+    ["Year","Winner","Pole won?","Safety cars","VSC","Laps under SC","Places moved","Pit loss","Stops"].forEach(function(h,i){ hr.appendChild(el("th",(i>=3?"n":"")+((i===4||i===6||i===8)?" hide-m":""), h)); });
     head.appendChild(hr); tb.appendChild(head);
     var body=el("tbody");
     hist.forEach(function(h){
       var tr=el("tr");
       tr.appendChild(el("td","mono",String(h.year)));
-      var w=el("td"); w.appendChild(document.createTextNode(String(h.winner||"-")+" ")); w.appendChild(el("span","muted",shortTeam(h.winner_team)+(h.winner_grid? ", from P"+h.winner_grid : ""))); tr.appendChild(w);
+      var w=el("td"); w.appendChild(document.createTextNode(String(h.winner||"-")+" ")); w.appendChild(el("span","muted hide-m",shortTeam(h.winner_team)+(h.winner_grid? ", from P"+h.winner_grid : ""))); tr.appendChild(w);
       tr.appendChild(el("td","",h.pole_won?"Yes":"No"));
-      [h.sc,h.vsc,h.sc_laps].forEach(function(v){ tr.appendChild(el("td","n",num(v)?String(v):"-")); });
-      tr.appendChild(el("td","n",fixed(h.avg_places_moved,1)));
+      tr.appendChild(el("td","n",num(h.sc)?String(h.sc):"-"));
+      tr.appendChild(el("td","n hide-m",num(h.vsc)?String(h.vsc):"-"));
+      tr.appendChild(el("td","n",num(h.sc_laps)?String(h.sc_laps):"-"));
+      tr.appendChild(el("td","n hide-m",fixed(h.avg_places_moved,1)));
       tr.appendChild(el("td","n",num(h.pit_loss_s)?fixed(h.pit_loss_s,1)+" s":"-"));
-      tr.appendChild(el("td","n",fixed(h.avg_stops,1)));
+      tr.appendChild(el("td","n hide-m",fixed(h.avg_stops,1)));
       body.appendChild(tr);
     });
     tb.appendChild(body);
@@ -665,12 +755,12 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     if(!REF||!REF.points||!REF.points.length||card.hidden||document.getElementById("insights").hidden) return;
     var dpr=window.devicePixelRatio||1, w=tc.clientWidth, h=tc.clientHeight; if(!w||!h) return;
     tc.width=Math.round(w*dpr); tc.height=Math.round(h*dpr);
-    var c=tc.getContext("2d"); if(!c) return; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    var c=tc.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
     var P=REF.points, L={l:44,r:12,t:22,b:26}, iw=w-L.l-L.r, ih=h-L.t-L.b;
     var dmax=P[P.length-1][5]||REF.length_m||1, smax=Math.ceil(Math.max.apply(null,P.map(function(p){return p[2];}))/50)*50;
     function X(dd){return L.l+dd/dmax*iw;} function Y(s){return L.t+ih-(s/smax)*ih;}
     var ink=css("--fg"), mut=css("--muted"), grid=css("--grid"), s1=css("--s1"), acc=css("--accent-fill");
-    c.font="12px "+css("--body"); c.textBaseline="middle";
+    c.font=(w<500?11:12)+"px "+css("--body"); c.textBaseline="middle";
     c.strokeStyle=grid; c.lineWidth=1; c.fillStyle=mut; c.textAlign="right";
     for(var v=0; v<=smax; v+=50){ c.beginPath(); c.moveTo(L.l,Y(v)+.5); c.lineTo(w-L.r,Y(v)+.5); c.stroke(); c.fillText(String(v),L.l-6,Y(v)); }
     // braking zones
@@ -682,7 +772,8 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     P.forEach(function(p,i){ if(i) c.lineTo(X(p[5]),Y(p[2])); else c.moveTo(X(p[5]),Y(p[2])); }); c.stroke();
     // corners
     c.fillStyle=mut; c.textAlign="center"; c.textBaseline="alphabetic";
-    (REF.corners||[]).forEach(function(k){ if(num(k.dist)) c.fillText(String(k.n),X(k.dist),L.t-8); });
+    var lastX=-99, gapPx=w<500?19:16;
+    (REF.corners||[]).slice().sort(function(a,b){return a.dist-b.dist;}).forEach(function(k){ if(!num(k.dist)) return; var x=X(k.dist); if(x-lastX<gapPx) return; c.fillText(String(k.n),x,L.t-8); lastX=x; });
     c.textBaseline="top"; c.fillText("km/h",L.l,2);
     c.textAlign="center"; for(var m=0;m<=dmax;m+=1000){ c.fillText((m/1000)+" km",X(m),h-L.b+8); }
     TRACE_STATE={X:X,Y:Y,P:P,L:L,w:w,h:h,dmax:dmax};
@@ -696,7 +787,14 @@ python build_data.py --year 2026 --round 17 --venue Singapore
   }
   tc.addEventListener("pointermove",function(ev){ var r=tc.getBoundingClientRect(); drawTrace(ev.clientX-r.left); });
   tc.addEventListener("pointerleave",function(){ drawTrace(); });
-  if(window.ResizeObserver) new ResizeObserver(function(){ drawTrace(); }).observe(tc); else window.addEventListener("resize",function(){ drawTrace(); });
+  var lastMapW={a:0,b:0}, resizeTimer=null;
+  function redrawMaps(){
+    var a=document.getElementById("mapSvg"), b=document.getElementById("speedSvg");
+    if(!document.getElementById("preview").hidden){ var wa=Math.round(a.getBoundingClientRect().width); if(wa&&wa!==lastMapW.a){ lastMapW.a=wa; drawOutlineMap(); } }
+    if(REF&&!document.getElementById("insights").hidden){ var wb=Math.round(b.getBoundingClientRect().width); if(wb&&wb!==lastMapW.b){ lastMapW.b=wb; drawSpeedMap(); } }
+  }
+  function onResize(){ clearTimeout(resizeTimer); resizeTimer=setTimeout(function(){ redrawMaps(); drawTrace(); },120); }
+  if(window.ResizeObserver) new ResizeObserver(onResize).observe(document.querySelector(".wrap")); else window.addEventListener("resize",onResize);
   document.getElementById("traceHint") && (document.getElementById("traceHint").textContent="Speed over the reference lap. Shaded bands are braking zones; numbers along the top are corners.");
 
   /* ---------- replay (OpenF1) ---------- */
@@ -714,7 +812,7 @@ python build_data.py --year 2026 --round 17 --venue Singapore
     var td=el("td"); if(!st){ td.textContent="-"; return td; }
     var c=(st.compound||"?").toUpperCase(); var col={SOFT:"var(--bad)",MEDIUM:"var(--accent)",HARD:"var(--fg)",INTERMEDIATE:"var(--good)",WET:"#4bb3f0"}[c]||"var(--muted)";
     var b=el("span","tyre",c.charAt(0)); b.style.borderColor=col; td.appendChild(b);
-    td.appendChild(el("span","muted"," stint "+st.stint_number+" from lap "+st.lap_start)); return td;
+    td.appendChild(el("span","muted hide-m"," stint "+st.stint_number+" from lap "+st.lap_start)); return td;
   }
   function renderBoard(pos,gaps,stints){
     var tb=document.getElementById("board"); clear(tb);
@@ -722,7 +820,7 @@ python build_data.py --year 2026 --round 17 --venue Singapore
       var dr=drivers[p.driver_number]||{}, g=gaps[p.driver_number]||{}, tr=el("tr");
       tr.appendChild(el("td","n",String(p.position)));
       var td=el("td"); var sw=el("span","sw"); sw.style.background=dr.team_colour?"#"+String(dr.team_colour).replace(/[^0-9a-fA-F]/g,"").slice(0,6):"var(--muted)";
-      td.appendChild(sw); td.appendChild(document.createTextNode((dr.name_acronym||("#"+p.driver_number))+"  ")); td.appendChild(el("span","muted",dr.team_name||"")); tr.appendChild(td);
+      td.appendChild(sw); td.appendChild(document.createTextNode((dr.name_acronym||("#"+p.driver_number))+"  ")); td.appendChild(el("span","muted hide-m",dr.team_name||"")); tr.appendChild(td);
       tr.appendChild(el("td","n",fmtGap(g.gap_to_leader))); tr.appendChild(el("td","n",fmtGap(g.interval))); tr.appendChild(tyreCell(stints[p.driver_number]));
       tb.appendChild(tr);
     });
@@ -776,3 +874,5 @@ python build_data.py --year 2026 --round 17 --venue Singapore
   window.__pitwall={setData:setData,parseAndSet:parseAndSet};
 })();
 </script>
+</body>
+</html>

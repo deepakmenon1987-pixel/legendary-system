@@ -11,7 +11,7 @@ Currently set up for the 2026 Singapore Grand Prix (round 17).
 
 ## Quick start
 
-1. Open `pit-wall.html` in a browser. The Preview and Calendar tabs work straight away.
+1. Open `index.html` in a browser (phone or desktop). The Preview and Calendar tabs work straight away.
 2. Build your data file (needs internet, Python 3.9+):
 
    ```bash
@@ -26,9 +26,8 @@ If `pitwall_data.json` sits next to the page and the page is served from a web a
 
 ## Host it on GitHub Pages
 
-1. Rename `pit-wall.html` to `index.html` (or keep the name and open `/pit-wall.html`).
-2. In the repository, go to Settings, then Pages, and deploy from the `main` branch, root folder.
-3. Commit your `pitwall_data.json` next to it. Hosted this way, the Replay tab can reach OpenF1 too.
+1. In the repository, go to Settings, then Pages, and deploy from the `main` branch, root folder. `index.html` is served at the site root.
+2. Commit your `pitwall_data.json` next to it. Hosted this way, the Replay tab can reach OpenF1 too.
 
 ## Next race
 
